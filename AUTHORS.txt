@@ -1,1 +1,8 @@
 TODO(Checkpoint Requirement 1 of 3): Add team member names and emails.
+
+Chris Cooper <chriscooper_tx@techexchange.in>
+Sebastian Balderrama <sebastian_balderrama@techexchange.in>
+Daniel Aguilar <daniel_aguilar03@techexchange.in>
+Vinodhini Chockalingam <vinodhinic@techexchange.in>
+Brian Noyama <noyama@techexchange.in>
+Melissa Kohl <meljkohl@techexchange.in>
