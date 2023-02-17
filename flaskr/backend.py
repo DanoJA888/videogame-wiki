@@ -27,11 +27,31 @@ class Backend:
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs]
 
-    def upload(self):
-        pass
+    def upload(self, file_name):
+        client = storage.Client()
+        bucket = client.get_bucket('wikicontent')
+        blob = bucket.blob(file_name)
 
-    def sign_up(self):
-        pass
+        blob.upload_from_filename(file_name)
+
+
+    def sign_up(self, user, pw):
+        client = storage.Client()
+        bucket = client.get_bucket('userpasswordinfo')
+        blobs = bucket.list_blobs()
+        blob = None
+
+        for item in blobs:
+            if item.name == user + ".txt":
+                print('Username is already taken')
+                return
+        
+        blob = bucket.blob(user + '.txt')
+        with blob.open(mode='w') as file:
+            file.write(user)
+            file.write(" ")
+            file.write(pw.hash())
+        
 
     def sign_in(self):
         pass
