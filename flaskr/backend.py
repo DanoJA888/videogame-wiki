@@ -51,10 +51,36 @@ class Backend:
             file.write(user)
             file.write(" ")
             file.write(pw.hash())
+            
         
 
-    def sign_in(self):
-        pass
+    def sign_in(self, user, pw):
+        client = storage.Client()
+        bucket = client.get_bucket('userpasswordinfo')
+        blobs = bucket.list_blobs()
+        user_info = None
+        for blob in blobs:
+            if user == blob.name:
+                user_info = blob
+                break
+        if not user_info:
+            print('Username does not exist')
+            return False
+        username_and_password = None
+        with user_info.open(mode = 'r') as file:
+            for line in file:
+                username_and_password = line.split(' ')
+        if username_and_password[-1] == pw.hash():
+            return True
+        print('Password does not match')
+        return False
 
-    def get_image(self):
-        pass
+        
+    def get_image(self, name):
+        client = storage.Client()
+        bucket = client.get_bucket('wikicontent')
+        blobs = bucket.list_blobs()
+        for blob in blobs:
+            if blob.name == name:
+                return blob
+        print('image not found')
