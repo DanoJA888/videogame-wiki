@@ -13,15 +13,18 @@ def make_endpoints(app):
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
 
-    @app.route("/get-page/<page_name>")
-    def get_wiki_page(page_name):
+    @app.route("/pages/<page>")
+    def get_user_page(page):
+        '''Fetches page from backend.
+
+        Args:
+            page:
+                The name of the page to be fetched.
+
+        Returns:
+            The page contents as a string.
+        '''
         b = Backend()
-        page = b.get_wiki_page(page_name)
+        page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
-
-    @app.route("/get-pages")
-    def get_all_page_names():
-        b = Backend()
-        all_page_names = b.get_all_page_names()
-        return ', '.join(all_page_names)
