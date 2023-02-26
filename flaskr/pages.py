@@ -15,6 +15,15 @@ def make_endpoints(app):
 
     @app.route("/pages/<page>")
     def get_user_page(page):
+        '''Fetches page from backend.
+
+        Args:
+            page:
+                The name of the page to be fetched.
+
+        Returns:
+            The page contents as a string.
+        '''
         b = Backend()
         page = b.get_wiki_page(page)
         with page.open('r') as f:
