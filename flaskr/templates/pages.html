@@ -3,13 +3,19 @@
 
 <head>
     <head>
-        <title>Pages contained in this Wiki</title>
+        <title>Pages</title>
     </head>
 </head>
 
 <body>
-    <div>       
-        {{ links }}
+    <div>
+        Pages contained in this Wiki       
+        <p style="margin-left: 25px;">
+        {% for page in pages %}
+        <b></b>
+        <a href="{{page.self_link}}">{{page.name}}<br/></a>
+        {% endfor %}
+        </p>
     </div>
 </body>
 

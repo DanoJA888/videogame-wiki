@@ -29,11 +29,11 @@ def make_endpoints(app):
         with page.open('r') as f:
             return f.read()
 
-    @app.route("/pages/")
+    @app.route("/pages")
     def get_all_pages():
         b = Backend()
-        links = []
-        pages = b.get_all_page_names()
-        for page in pages:
-            links.append(page.self_link)
-        return render_template("pages.html", links=links)
+        pages = []
+        names = b.get_all_page_names()
+        for name in names:
+            pages.append(b.get_wiki_page(name))
+        return render_template("pages.html", pages=pages)
