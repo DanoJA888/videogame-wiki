@@ -7,11 +7,17 @@ About This Wiki
 {% block content %}
 <h3>About this Wiki</h3>
 
+<p>This Wiki discusses all things videogames, from different genres to some of the most popular games in each!</p>
+
 <!-- TODO(Project 1): Add info about the wiki. -->
 
 <h3>Your Authors</h3>
 
 <!-- TODO(Project 1): Add team members and pictures to about page. -->
+{% for name, image in about_info %}
+    <p>{{name}}</p>
+    <img src = 'data:image/jpeg;base64, {{image}}' alt = "Daniel's Image">
+{% endfor %}
 
 {% endblock %}
 

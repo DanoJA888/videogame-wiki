@@ -1,12 +1,14 @@
 #TODO(Project 1): Implement Backend according to the requirements.
 
 from google.cloud import storage
+import base64
 
 class Backend:
 
     def __init__(self):
         pass
-        
+
+      
     # Returns the requested page
     def get_wiki_page(self, name):
         storage_client = storage.Client()
@@ -16,9 +18,11 @@ class Backend:
             return 'bucket not found'
         blob = bucket.blob(name)
         return blob if blob else 'page not found'
+        
 
     # Returns a list of all the page names
     def get_all_page_names(self):
+
         storage_client = storage.Client()
         try:
             bucket = storage_client.bucket('wikicontent')
@@ -26,8 +30,10 @@ class Backend:
             return 'bucket not found'
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs]
+        
 
     def upload(self, file_name):
+        
         client = storage.Client()
         bucket = client.get_bucket('wikicontent')
         blob = bucket.blob(file_name)
@@ -80,7 +86,13 @@ class Backend:
         client = storage.Client()
         bucket = client.get_bucket('wikicontent')
         blobs = bucket.list_blobs()
+        image = None
         for blob in blobs:
             if blob.name == name:
-                return blob
-        print('image not found')
+                with blob.open(mode = 'rb') as file:
+                    image = base64.b64encode(file.read())
+                break
+        if not image:
+            print('image not found')
+        else:
+            return image

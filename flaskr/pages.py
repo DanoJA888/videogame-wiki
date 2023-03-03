@@ -28,3 +28,11 @@ def make_endpoints(app):
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
+    
+    @app.route("/about", methods = ['GET'])
+    def about():
+        b = Backend()
+        images = [b.get_image("Zucc.jpg").decode('utf-8')]
+        names = ["Daniel Aguilar"]
+        about_info = zip(names, images)
+        return render_template("about.html", about_info = about_info)
