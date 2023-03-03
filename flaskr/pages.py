@@ -31,6 +31,9 @@ def make_endpoints(app):
 
     @app.route("/pages")
     def get_all_pages():
+        
+        # Passes a list of all blobs from wikicontent into pages.html.
+
         b = Backend()
         pages = []
         names = b.get_all_page_names()
