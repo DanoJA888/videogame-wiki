@@ -9,11 +9,11 @@
 
 <body>
     <div>
-        Pages contained in this Wiki       
-        <p style="margin-left: 25px;">
+        <h1 style="font-size:40px;"><center>Pages contained in this Wiki</center></h1>   
+        <p style="margin-left: 25px; font-size:30px;">
         {% for page in pages %}
         <b></b>
-        <a href="/pages/{{ page.name }}">{{page.name}}<br/></a>
+        <a href="/pages/{{ page.name }}"><center>{{page.name}}</center><br/></a>
         {% endfor %}
         </p>
     </div>
