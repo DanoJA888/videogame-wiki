@@ -29,7 +29,7 @@ def make_endpoints(app):
         with page.open('r') as f:
             return f.read()
 
-    @app.route("/pages")
+    @app.route("/pages/")
     def get_all_pages():
         
         '''Passes a list of all blobs from wikicontent into pages.html.
