@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
     <head>
-        <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        <title>Java the Hutt Checkpoint Complete!</title>
+        <title>
+            {% block page_name %}
+                Java The Hutt Wiki
+            {% endblock %}
+        </title>
     </head>
-</head>
 
-<body>
-    {% include "navbar.html" %}
-    <!-- TODO(Project 1): Implement routes. -->
-    <div>       
-        <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        Hello Tatooine!
-    </div>
-</body>
+    <body>
+        {% include "navbar.html" %}
 
+        {% block content %}
+            <h3>Welcome to the Java The Hutt Wiki</h3>
+        {% endblock %}
+    </body>
 </html>
