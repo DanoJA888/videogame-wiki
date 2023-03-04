@@ -32,13 +32,14 @@ def make_endpoints(app):
     @app.route("/pages")
     def get_all_pages():
         
-        # Passes a list of all blobs from wikicontent into pages.html.
+        '''Passes a list of all blobs from wikicontent into pages.html.
+        
+            Returns:
+                A render of the pages.html file w/ the pages list passed in.
+        '''
 
         b = Backend()
-        pages = []
-        names = b.get_all_page_names()
-        for name in names:
-            pages.append(b.get_wiki_page(name))
+        pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
     @app.route("/signup")
