@@ -9,11 +9,7 @@ def make_endpoints(app):
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
-        # to render main.html on the home page.
         return render_template('main.html', username=username)
-
-    # TODO(Project 1): Implement additional routes according to the project requirements.
 
     @app.route("/pages/<page>")
     def get_user_page(page):
