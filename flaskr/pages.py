@@ -40,3 +40,7 @@ def make_endpoints(app):
         for name in names:
             pages.append(b.get_wiki_page(name))
         return render_template("pages.html", pages=pages)
+
+    @app.route("/signup")
+    def signup():
+        pass
