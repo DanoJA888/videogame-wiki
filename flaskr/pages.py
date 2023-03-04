@@ -28,3 +28,20 @@ def make_endpoints(app):
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
+
+    @app.route("/pages/")
+    def get_all_pages():
+        
+        '''Passes a list of all blobs from wikicontent into pages.html.
+        
+            Returns:
+                A render of the pages.html file w/ the pages list passed in.
+        '''
+
+        b = Backend()
+        pages = b.get_all_page_names()
+        return render_template("pages.html", pages=pages)
+
+    @app.route("/signup")
+    def signup():
+        pass

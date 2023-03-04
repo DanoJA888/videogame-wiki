@@ -48,8 +48,6 @@ class Backend:
         
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
-            file.write(user)
-            file.write(" ")
             file.write(pw.hash())
             
         
