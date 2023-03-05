@@ -3,7 +3,7 @@ from flaskr.backend import Backend
 
 def make_endpoints(app):
 
-    username = ''
+    username = None
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -58,4 +58,9 @@ def make_endpoints(app):
                 
         
         return render_template("signup.html", confirm=confirm)
+
+    @app.route("/logout")
+    def logout():
+        if username:
+            return render_template('main.html', username=None)
             
