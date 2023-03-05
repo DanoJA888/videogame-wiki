@@ -60,11 +60,12 @@ def make_endpoints(app):
     @app.route("/about", methods = ['GET'])
     def about():
         b = Backend()
-        images = [b.get_image("Zucc.jpg").decode('utf-8')]
+        images = [b.get_image("Daniel_Image.jpg").decode('utf-8')]
         names = ["Daniel Aguilar"]
         about_info = zip(names, images)
-        return render_template("about.html", about_info = about_info)
-
+        return render_template("about.html", about_info = about_info, username = username)
+    
+    @login_required
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
         '''Uploads user content to backend.
@@ -106,7 +107,7 @@ def make_endpoints(app):
 
         b = Backend()
         pages = b.get_all_page_names()
-        return render_template("pages.html", pages=pages)
+        return render_template("pages.html", pages=pages, username = username)
 
     @app.route("/signup")
     def signup():
@@ -128,13 +129,14 @@ def make_endpoints(app):
                 flash('Username does not exist')
                 return redirect('/login')
             else:
-                flash('Password does not macth ', username)
+                flash('Password does not macth entered username, please try again')
                 return redirect('/login')
         return render_template("login.html")
     
+    @login_required
     @app.route("/logout")
     def logout():
         logout_user()
-        flash(username, ' has been logged out')
+        flash('You have logged out')
         return render_template('logout.html')
 

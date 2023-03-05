@@ -13,6 +13,12 @@
 
         {% block content %}
             <h3>Welcome to the Java The Hutt Wiki</h3>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <li>{{ messages[0] }}</li>
+                {% endif %}
+            {% endwith %}
         {% endblock %}
+        
     </body>
 </html>

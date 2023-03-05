@@ -64,6 +64,7 @@ class Backend:
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
             file.write(str(pw.hash()))
+
             
     def sign_in(self, user, pw):
         client = storage.Client()
