@@ -2,6 +2,7 @@
 
 from google.cloud import storage
 import base64
+import hashlib
 
 class Backend:
 
@@ -29,17 +30,25 @@ class Backend:
         except google.cloud.exceptions.NotFound:
             return 'bucket not found'
         blobs = bucket.list_blobs()
-        return [blob.name for blob in blobs]
-        
+        return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'html']
+
+    # Returns a list of all the image names
+    def get_all_image_names(self):
+        storage_client = storage.Client()
+        try:
+            bucket = storage_client.bucket('wikicontent')
+        except google.cloud.exceptions.NotFound:
+            return 'bucket not found'
+        blobs = bucket.list_blobs()
+        return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
 
     def upload(self, file_name):
         
         client = storage.Client()
         bucket = client.get_bucket('wikicontent')
         blob = bucket.blob(file_name)
-
+        blob.name = file_name.split('/')[-1]
         blob.upload_from_filename(file_name)
-
 
     def sign_up(self, user, pw):
         client = storage.Client()
@@ -54,28 +63,32 @@ class Backend:
         
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
-            file.write(pw.hash())
+            file.write(str(pw.hash()))
             
     def sign_in(self, user, pw):
         client = storage.Client()
         bucket = client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
         user_info = None
+        user_and_password_match = [False, False]
+        
         for blob in blobs:
-            if user == blob.name:
+            if user+'.txt' == blob.name:
                 user_info = blob
                 break
+        
         if not user_info:
-            print('Username does not exist')
-            return False
-        username_and_password = None
+            return user_and_password_match
+        
+        user_and_password_match[0] = True
+        check_password = None
+       
         with user_info.open(mode = 'r') as file:
-            for line in file:
-                username_and_password = line.split(' ')
-        if username_and_password[-1] == pw.hash():
-            return True
-        print('Password does not match')
-        return False
+            check_password = file.read()
+        #hash = hashlib.blake2b(pw.encode()).hexdigest()
+        if check_password == pw:
+            user_and_password_match[-1] = True
+        return user_and_password_match
 
         
     def get_image(self, name):

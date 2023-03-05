@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block page_name %}
+Logout
+{% endblock %}
+
+{% block content %}
+<h3>Logged Out</h3>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <li>{{ messages[0] }}</li>
+    {% endif %}
+{% endwith %}
+
+{% endblock %}
