@@ -63,7 +63,7 @@ class Backend:
         
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
-            file.write(str(pw.hash()))
+            file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
 
             
     def sign_in(self, user, pw):
@@ -90,7 +90,6 @@ class Backend:
         if check_password == pw:
             user_and_password_match[-1] = True
         return user_and_password_match
-
         
     def get_image(self, name):
         client = storage.Client()
