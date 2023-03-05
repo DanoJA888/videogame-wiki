@@ -91,8 +91,5 @@ def make_endpoints(app):
         
         return render_template("signup.html", confirm=confirm)
 
-    @app.route("/logout")
-    def logout():
-        if username:
-            return render_template('main.html', username=None)
+    
             
