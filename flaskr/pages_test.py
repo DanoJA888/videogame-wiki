@@ -23,3 +23,11 @@ def test_home_page(client):
     assert b"Hello, World!\n" in resp.data
 
 # TODO(Project 1): Write tests for other routes.
+def test_pages_route(client):
+    resp = client.get("/pages/")
+    html = resp.data.decode()
+    assert resp.status_code == 200
+
+def test_signup(client):
+    resp = client.get("/signup")
+    assert resp.status_code == 200
