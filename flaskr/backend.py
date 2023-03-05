@@ -25,15 +25,24 @@ class Backend:
         except google.cloud.exceptions.NotFound:
             return 'bucket not found'
         blobs = bucket.list_blobs()
-        return [blob.name for blob in blobs]
+        return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'html']
+
+    # Returns a list of all the image names
+    def get_all_image_names(self):
+        storage_client = storage.Client()
+        try:
+            bucket = storage_client.bucket('wikicontent')
+        except google.cloud.exceptions.NotFound:
+            return 'bucket not found'
+        blobs = bucket.list_blobs()
+        return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
 
     def upload(self, file_name):
         client = storage.Client()
         bucket = client.get_bucket('wikicontent')
         blob = bucket.blob(file_name)
-
+        blob.name = file_name.split('/')[-1]
         blob.upload_from_filename(file_name)
-
 
     def sign_up(self, user, pw):
         client = storage.Client()
