@@ -52,12 +52,13 @@ class Backend:
 
         for item in blobs:
             if item.name == user + ".txt":
-                print('Username is already taken')
-                return
+                return False
         
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
-            file.write(pw.hash())
+            file.write(str(hash(pw)))
+        
+        return True
             
     def sign_in(self, user, pw):
         client = storage.Client()
@@ -75,7 +76,7 @@ class Backend:
         with user_info.open(mode = 'r') as file:
             for line in file:
                 username_and_password = line.split(' ')
-        if username_and_password[-1] == pw.hash():
+        if username_and_password[-1] == str(hash(pw)):
             return True
         print('Password does not match')
         return False

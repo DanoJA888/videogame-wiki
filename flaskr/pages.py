@@ -72,6 +72,22 @@ def make_endpoints(app):
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
-    @app.route("/signup")
+    @app.route("/signup", methods =['GET', 'POST'])
     def signup():
-        pass
+        b = Backend()
+        confirm = ""
+        
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            if not username or not password:
+                confirm = "Please fill out all fields."
+            if not b.sign_up(username, password):
+                confirm = "Username already taken!"
+            else:
+                b.sign_up(username, password)
+                confirm = "Successful sign-up!"
+                
+        
+        return render_template("signup.html", confirm=confirm)
+            
