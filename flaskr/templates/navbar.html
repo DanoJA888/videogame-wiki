@@ -10,9 +10,9 @@
             <a href = "/about">About</a>
         </li>
         <li style="display:inline; padding-right: 20px;"> | </li>
-        {% if username %}
+        {% if current_user.is_authenticated %}
             <li style="display:inline; padding-right: 20px;">
-                {{ username }}
+                {{ current_user.id }}
             </li>
             <li style="display:inline; padding-right: 20px;"> | </li>
             <li style="display:inline; padding-right: 20px;">

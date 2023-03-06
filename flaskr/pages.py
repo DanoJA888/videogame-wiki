@@ -1,17 +1,43 @@
-from flask import render_template, redirect, request, flash
+from flask import render_template, redirect, request, flash, url_for, make_response
 from flaskr.backend import Backend
 from werkzeug.utils import secure_filename
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required, UserMixin
+from google.cloud import storage
 import os
 
-def make_endpoints(app):
+class User(UserMixin):
+    def __init__(self, username, client, bucket):
+        self.id = username
+        self.username = username
+        self.client = client
+        self.bucket = bucket
+        self.blob = self.bucket.get_blob(username+'.txt')
+    def get(self, username):
+        if self.blob:
+            return User(self.id, self.client, self.bucket)
+        return None
 
-    username = ''
+
+def make_endpoints(app):
+    
+    app.secret_key = "key"
+    client = storage.Client()
+    bucket = client.bucket('userpasswordinfo')
+
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    
+
+    @login_manager.user_loader
+    def load_user(username):
+        return User(username, client, bucket).get(username)
+
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        return render_template('main.html', username=username)
+        return render_template('main.html')
 
     @app.route("/pages/<page>")
     def get_user_page(page):
@@ -28,7 +54,17 @@ def make_endpoints(app):
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
+    
 
+    @app.route("/about", methods = ['GET'])
+    def about():
+        b = Backend()
+        images = [b.get_image("Daniel_Image.jpg").decode('utf-8')]
+        names = ["Daniel Aguilar"]
+        about_info = zip(names, images)
+        return render_template("about.html", about_info = about_info)
+    
+    @login_required
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
         '''Uploads user content to backend.
@@ -75,3 +111,31 @@ def make_endpoints(app):
     @app.route("/signup")
     def signup():
         pass
+
+    @app.route("/login", methods = ['GET', 'POST'])
+    def login():
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            b= Backend()
+            result_of_credential_input = b.sign_in(username, password)
+            if result_of_credential_input[0] and result_of_credential_input[1]:
+                u = User(username, client, bucket)
+                login_user(u)
+                flash('Succesfully Logged In')
+                return render_template('main.html')
+            elif not result_of_credential_input[0]:
+                flash('Username does not exist')
+                return redirect('/login')
+            else:
+                flash('Password does not macth entered username, please try again')
+                return redirect('/login')
+        return render_template("login.html")
+    
+    @login_required
+    @app.route("/logout")
+    def logout():
+        logout_user()
+        flash('You have logged out')
+        return render_template('logout.html')
+
