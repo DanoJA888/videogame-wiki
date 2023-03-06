@@ -86,8 +86,8 @@ class Backend:
        
         with user_info.open(mode = 'r') as file:
             check_password = file.read()
-        #hash = hashlib.blake2b(pw.encode()).hexdigest()
-        if check_password == pw:
+        hashed_pw = hashlib.blake2b(pw.encode()).hexdigest()
+        if check_password == str(hashed_pw):
             user_and_password_match[-1] = True
         return user_and_password_match
         
