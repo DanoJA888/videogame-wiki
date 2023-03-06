@@ -65,6 +65,7 @@ def make_endpoints(app):
         about_info = zip(names, images)
         return render_template("about.html", about_info = about_info)
     
+    
     @app.route('/upload', methods=['GET', 'POST'])
     @login_required
     def upload():
@@ -146,6 +147,7 @@ def make_endpoints(app):
                 flash('Password does not macth entered username, please try again')
                 return redirect('/login')
         return render_template("login.html")
+    
     
     @app.route("/logout")
     @login_required
