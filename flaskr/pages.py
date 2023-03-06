@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 from google.cloud import storage
 import os
 
+
 class User(UserMixin):
     def __init__(self, username, client, bucket):
         self.id = username
@@ -64,8 +65,8 @@ def make_endpoints(app):
         about_info = zip(names, images)
         return render_template("about.html", about_info = about_info)
     
-    @login_required
     @app.route('/upload', methods=['GET', 'POST'])
+    @login_required
     def upload():
         '''Uploads user content to backend.
 
@@ -146,9 +147,11 @@ def make_endpoints(app):
                 return redirect('/login')
         return render_template("login.html")
     
-    @login_required
     @app.route("/logout")
+    @login_required
     def logout():
         logout_user()
         flash('You have logged out')
         return render_template('logout.html')
+
+    
