@@ -28,7 +28,7 @@ def test_pages_route(client):
     html = resp.data.decode()
     assert resp.status_code == 200
 
-def test_signup(client):
+def test_signup_route(client):
     resp = client.get("/signup")
     assert resp.status_code == 200
 
