@@ -58,8 +58,7 @@ class Backend:
 
         for item in blobs:
             if item.name == user + ".txt":
-                print('Username is already taken')
-                return
+                return False
         
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:

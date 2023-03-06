@@ -108,9 +108,23 @@ def make_endpoints(app):
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
-    @app.route("/signup")
+    @app.route("/signup", methods =['GET', 'POST'])
     def signup():
-        pass
+        b = Backend()
+        
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            if not username or not password:
+                flash("Please fill out all fields.")
+                return redirect(request.url)
+            if not b.sign_up(username, password):
+                flash("Username already taken!")
+            else:
+                b.sign_up(username, password)
+                flash("Successful sign-up!")
+            return redirect(request.url)
+        return render_template("signup.html")
 
     @app.route("/login", methods = ['GET', 'POST'])
     def login():
@@ -138,4 +152,3 @@ def make_endpoints(app):
         logout_user()
         flash('You have logged out')
         return render_template('logout.html')
-
