@@ -21,7 +21,6 @@ class User(UserMixin):
 def make_endpoints(app):
     
     app.secret_key = "key"
-    username = ''
     client = storage.Client()
     bucket = client.bucket('userpasswordinfo')
 
@@ -38,7 +37,7 @@ def make_endpoints(app):
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        return render_template('main.html', username=username)
+        return render_template('main.html')
 
     @app.route("/pages/<page>")
     def get_user_page(page):
@@ -63,7 +62,7 @@ def make_endpoints(app):
         images = [b.get_image("Daniel_Image.jpg").decode('utf-8')]
         names = ["Daniel Aguilar"]
         about_info = zip(names, images)
-        return render_template("about.html", about_info = about_info, username = username)
+        return render_template("about.html", about_info = about_info)
     
     @login_required
     @app.route('/upload', methods=['GET', 'POST'])
@@ -107,7 +106,7 @@ def make_endpoints(app):
 
         b = Backend()
         pages = b.get_all_page_names()
-        return render_template("pages.html", pages=pages, username = username)
+        return render_template("pages.html", pages=pages)
 
     @app.route("/signup")
     def signup():
@@ -124,7 +123,7 @@ def make_endpoints(app):
                 u = User(username, client, bucket)
                 login_user(u)
                 flash('Succesfully Logged In')
-                return render_template('main.html', username = username)
+                return render_template('main.html')
             elif not result_of_credential_input[0]:
                 flash('Username does not exist')
                 return redirect('/login')
