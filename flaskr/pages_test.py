@@ -1,7 +1,7 @@
 from flaskr import create_app
-from flask_login import LoginManager, UserMixin, current_user
 from unittest import mock
 import pytest
+import flaskr.pages
 
 
 # See https://flask.palletsprojects.com/en/2.2.x/testing/ 
@@ -29,7 +29,6 @@ def test_home_page(client):
 # TODO(Project 1): Write tests for other routes.
 def test_pages_route(client):
     resp = client.get("/pages/")
-    html = resp.data.decode()
     assert resp.status_code == 200
 
 def test_signup_route(client):
