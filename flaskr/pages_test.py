@@ -31,3 +31,6 @@ def test_pages_route(client):
 def test_signup(client):
     resp = client.get("/signup")
     assert resp.status_code == 200
+
+    # resp = client.post()
+    
