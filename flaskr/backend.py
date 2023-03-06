@@ -63,6 +63,7 @@ class Backend:
         blob = bucket.blob(user + '.txt')
         with blob.open(mode='w') as file:
             file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
+            return True
 
             
     def sign_in(self, user, pw):
