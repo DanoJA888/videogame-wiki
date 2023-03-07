@@ -19,7 +19,7 @@ class User(UserMixin):
         return None
 
 
-def make_endpoints(app):
+def make_endpoints(app, backend = Backend()):
     
     app.secret_key = "key"
     client = storage.Client()
@@ -27,7 +27,7 @@ def make_endpoints(app):
 
     login_manager = LoginManager()
     login_manager.init_app(app)
-    
+    b = backend
 
     @login_manager.user_loader
     def load_user(username):
@@ -51,7 +51,6 @@ def make_endpoints(app):
         Returns:
             The page contents as a string.
         '''
-        b = Backend()
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
@@ -59,9 +58,9 @@ def make_endpoints(app):
 
     @app.route("/about", methods = ['GET'])
     def about():
-        b = Backend()
-        images = [b.get_image("Daniel_Image.jpg").decode('utf-8')]
-        names = ["Daniel Aguilar"]
+        images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
+        b.get_image("Sebastian_Img.jpg").decode('utf-8')]
+        names = ["Daniel Aguilar", "Chris Cooper", "Sebastian Balderrama"]
         about_info = zip(names, images)
         return render_template("about.html", about_info = about_info)
     
@@ -84,7 +83,6 @@ def make_endpoints(app):
             elif file.filename.split('.')[-1] not in {'html', 'jpg'}:
                 flash('File type not accepted')
                 return redirect(request.url)
-            b = Backend()
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
                 filename = 'flaskr/uploads/' + filename
@@ -106,13 +104,11 @@ def make_endpoints(app):
                 A render of the pages.html file w/ the pages list passed in.
         '''
 
-        b = Backend()
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
     @app.route("/signup", methods =['GET', 'POST'])
     def signup():
-        b = Backend()
         
         if request.method == 'POST':
             username = request.form['username']
@@ -133,7 +129,6 @@ def make_endpoints(app):
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
-            b= Backend()
             result_of_credential_input = b.sign_in(username, password)
             if result_of_credential_input[0] and result_of_credential_input[1]:
                 u = User(username, client, bucket)
