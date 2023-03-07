@@ -31,18 +31,29 @@ def test_pages_route(client):
     resp = client.get("/pages/")
     assert resp.status_code == 200
 
+def test_pages_content(client):
+    resp = client.get("/pages/")
+    html = resp.data.decode()
+    assert "Pages contained in this Wiki" in html
+    
 def test_signup_route(client):
     resp = client.get("/signup")
     assert resp.status_code == 200
 
+def test_signup_content(client):
+    resp = client.get("/signup")
+    html = resp.data.decode()
+    assert "Sign Up" in html
+
 @mock.patch('flask_login.utils._get_user')
-def test_login_required(self, client):
-    user = mock.MagicMock()
-    resp_upload = client.get("/upload")
-    resp_logout = client.get("/logout")
-    if not user.is_authenticated():
-        assert resp_upload.status_code == 401
-        assert resp_logout.status_code == 401
+def test_upload_login_required(self, client):
+    resp = client.get("/upload")
+    assert resp.status_code == 401
+    
+@mock.patch('flask_login.utils._get_user')
+def test_logout_login_required(self, client):
+    resp = client.get("/logout")
+    assert resp.status_code == 401
 
 
 
