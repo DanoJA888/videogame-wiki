@@ -8,7 +8,6 @@ class Backend:
 
     def __init__(self):
         pass
-
       
     # Returns the requested page
     def get_wiki_page(self, name):

@@ -59,8 +59,9 @@ def make_endpoints(app):
     @app.route("/about", methods = ['GET'])
     def about():
         b = Backend()
-        images = [b.get_image("Daniel_Image.jpg").decode('utf-8')]
-        names = ["Daniel Aguilar"]
+        images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
+        b.get_image("Sebastian_Img.jpg").decode('utf-8')]
+        names = ["Daniel Aguilar", "Chris Cooper", "Sebastian Balderrama"]
         about_info = zip(names, images)
         return render_template("about.html", about_info = about_info)
     
