@@ -31,11 +31,11 @@ def test_get_all_pages(mock_get_all_page_names, client):
     assert "Pages contained in this Wiki" in html
     mock_get_all_page_names.assert_called_once_with()
 
-    '''Mocks get_all_pages() from flaskr.pages.
+'''Mocks get_all_pages() from flaskr.pages.
         
-            Raises:
-                AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-        '''
+        Raises:
+            AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
+'''
 
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
 def test_signup_success(mock_sign_up, client):
@@ -45,11 +45,11 @@ def test_signup_success(mock_sign_up, client):
     assert "Sign Up" in html
     assert mock_sign_up("testuser", "testpw") == "User data successfully created"
 
-    '''Mocks the success of signup() from flaskr.pages.
+'''Mocks the success of signup() from flaskr.pages.
         
-            Raises:
-                AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-        '''
+        Raises:
+            AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
+'''
 
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="Enter missing user or password")    
 def test_signup_fail(mock_sign_up, client):
@@ -59,31 +59,31 @@ def test_signup_fail(mock_sign_up, client):
     assert "Sign Up" in html
     assert mock_sign_up("testuser", "testpw") == "Enter missing user or password"
 
-    '''Mocks the failure of signup() from flaskr.pages.
+'''Mocks the failure of signup() from flaskr.pages.
         
-            Raises:
-                AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-        '''
+        Raises:
+             AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
+'''
 
 def test_upload_login_required(client):
     resp = client.get("/upload")
     assert resp.status_code == 401
 
-    '''Mocks @login_required for upload() from flaskr.pages.
+'''Mocks @login_required for upload() from flaskr.pages.
         
-            Raises:
-                AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
-        '''
+        Raises:
+            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
+'''
     
 def test_logout_login_required(client):
     resp = client.get("/logout")
     assert resp.status_code == 401
 
-    '''Mocks @login_required for logout() from flaskr.pages.
+'''Mocks @login_required for logout() from flaskr.pages.
         
-            Raises:
-                AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
-        '''
+        Raises:
+            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
+'''
 
 
 

@@ -52,11 +52,11 @@ class Backend:
         else:
             return 'Ineligible filename'
         
-        '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
+    '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
         
-            Returns:
-                Strings corresponding to expected results for unit testing.
-        '''
+        Returns:
+            Strings corresponding to expected results for unit testing.
+    '''
 
 
     def sign_up(self, user, pw):
@@ -75,11 +75,11 @@ class Backend:
         else:
             return 'Enter missing user or password'
 
-        '''Uploads file to bucket 'userpasswordinfo' as a blob containing userdata in the event of eligible user and password.
+    '''Uploads file to bucket 'userpasswordinfo' as a blob containing userdata in the event of eligible user and password.
         
-            Returns:
-                Strings corresponding to expected results for unit testing.
-        '''
+        Returns:
+             Strings corresponding to expected results for unit testing.
+    '''
         
         
 

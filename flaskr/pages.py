@@ -100,11 +100,11 @@ def make_endpoints(app, backend = Backend()):
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
-        '''Passes a list of all blob names from wikicontent into pages.html.
+    '''Passes a list of all blob names from wikicontent into pages.html.
         
-            Returns:
-                A render of the pages.html file w/ the pages list passed in.
-        '''
+        Returns:
+            A render of the pages.html file w/ the pages list passed in.
+    '''
 
     @app.route("/signup", methods =['GET', 'POST'])
     def signup():       
@@ -122,11 +122,11 @@ def make_endpoints(app, backend = Backend()):
             return redirect(request.url)
         return render_template("signup.html")
 
-        '''Passes sign-up form information to backend to create user data.
+    '''Passes sign-up form information to backend to create user data.
         
-            Returns:
-                A render of the signup.html file w/ form content.
-        '''
+        Returns:
+            A render of the signup.html file w/ form content.
+    '''
 
 
     @app.route("/login", methods = ['GET', 'POST'])

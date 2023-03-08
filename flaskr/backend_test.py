@@ -11,12 +11,28 @@ def test_upload_success(mock_client):
     mock_backend = Backend(mock_client)
     assert mock_backend.upload(test_filename) == 'File uploaded to blob'
 
+'''Passes a mocked storage.Client to Backend to test the success of upload().
+            Args:
+                mock_client: the mocked storage.Client()
+                
+            Raises:
+                AssertionError: Return value is unexpected.
+'''
+
 @mock.patch("google.cloud.storage.Client")
 def test_upload_fail(mock_client):
     test_filename = ''
     mock_client = mock.MagicMock()
     mock_backend = Backend(mock_client)
     assert mock_backend.upload(test_filename) == 'Ineligible filename'
+
+'''Passes a mocked storage.Client to Backend to test the failure of upload().
+            Args:
+                mock_client: the mocked storage.Client()
+
+            Raises:
+                AssertionError: Return value is unexpected.
+'''
     
 @mock.patch("google.cloud.storage.Client")
 def test_sign_up_success(mock_client):
@@ -29,6 +45,14 @@ def test_sign_up_success(mock_client):
     mock_blob = None
     assert mock_backend.sign_up(user, pw) == 'User data successfully created'
 
+'''Passes a mocked storage.Client to Backend to test the success of sign_up().
+            Args:
+                mock_client: the mocked storage.Client()
+
+            Raises:
+                AssertionError: Return value is unexpected.
+'''
+
 @mock.patch("google.cloud.storage.Client")
 def test_sign_up_fail_user(mock_client):
     user = 'test_user'
@@ -37,6 +61,14 @@ def test_sign_up_fail_user(mock_client):
     mock_backend = Backend(mock_client)
     assert mock_backend.sign_up(user, pw) == 'Enter missing user or password'
 
+'''Passes a mocked storage.Client to Backend to test the failure of sign_up() due to 'user' return value.
+            Args:
+                mock_client: the mocked storage.Client()
+
+            Raises:
+                AssertionError: Return value is unexpected.
+'''
+
 @mock.patch("google.cloud.storage.Client")
 def test_sign_up_fail_pw(mock_client):
     user = ''
@@ -44,3 +76,11 @@ def test_sign_up_fail_pw(mock_client):
     mock_client = mock.MagicMock()
     mock_backend = Backend(mock_client)
     assert mock_backend.sign_up(user, pw) == 'Enter missing user or password'
+
+'''Passes a mocked storage.Client to Backend to test the failure of sign_up() due to 'pw' return value.
+            Args:
+                mock_client: the mocked storage.Client()
+
+            Raises:
+                AssertionError: Return value is unexpected.
+'''
