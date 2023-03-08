@@ -23,7 +23,7 @@ def make_endpoints(app, backend = Backend()):
     
     app.secret_key = "key"
     client = storage.Client()
-    bucket = client.bucket('userpasswordinfo')
+    bucket = client.get_bucket('userpasswordinfo')
 
     login_manager = LoginManager()
     login_manager.init_app(app)
