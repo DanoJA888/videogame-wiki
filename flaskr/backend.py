@@ -9,36 +9,23 @@ class Backend:
     def __init__(self, storage_client = storage.Client()):
         self.storage_client = storage_client
 
-      
     # Returns the requested page
     def get_wiki_page(self, name):
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
-        blob = bucket.blob(name)
-        return blob if blob else 'page not found'
+        bucket = self.storage_client.bucket('wikicontent')
+        if not (blob := bucket.get_blob(name)):
+            return 'The page does not exist.'
+        with blob.open('r') as f:
+            return f.read()
         
-
     # Returns a list of all the page names
     def get_all_page_names(self):
-
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
+        bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'html']
 
     # Returns a list of all the image names
     def get_all_image_names(self):
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
+        bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
 
@@ -61,8 +48,7 @@ class Backend:
         with blob.open(mode='w') as file:
             file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
             return True
-
-            
+   
     def sign_in(self, user, pw):
         bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()

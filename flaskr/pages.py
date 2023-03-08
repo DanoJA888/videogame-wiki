@@ -51,11 +51,8 @@ def make_endpoints(app, backend = Backend()):
         Returns:
             The page contents as a string.
         '''
-        page = b.get_wiki_page(page)
-        with page.open('r') as f:
-            return f.read()
-    
-
+        return b.get_wiki_page(page)
+        
     @app.route("/about", methods = ['GET'])
     def about():
         images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
