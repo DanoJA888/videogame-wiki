@@ -71,7 +71,7 @@ def make_endpoints(app, backend = Backend()):
         '''Uploads user content to backend.
 
         Returns:
-            Tha page contents as a string.
+            The page contents as a string.
         '''
         if request.method == 'POST':
             if 'file' not in request.files:
@@ -97,19 +97,17 @@ def make_endpoints(app, backend = Backend()):
 
     @app.route("/pages/")
     def get_all_pages():
-        
-        '''Passes a list of all blobs from wikicontent into pages.html.
+        pages = b.get_all_page_names()
+        return render_template("pages.html", pages=pages)
+
+        '''Passes a list of all blob names from wikicontent into pages.html.
         
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
 
-        pages = b.get_all_page_names()
-        return render_template("pages.html", pages=pages)
-
     @app.route("/signup", methods =['GET', 'POST'])
-    def signup():
-        
+    def signup():       
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -123,6 +121,13 @@ def make_endpoints(app, backend = Backend()):
                 flash("Successful sign-up!")
             return redirect(request.url)
         return render_template("signup.html")
+
+        '''Passes sign-up form information to backend to create user data.
+        
+            Returns:
+                A render of the signup.html file w/ form content.
+        '''
+
 
     @app.route("/login", methods = ['GET', 'POST'])
     def login():

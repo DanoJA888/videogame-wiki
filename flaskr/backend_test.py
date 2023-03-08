@@ -44,6 +44,3 @@ def test_sign_up_fail_pw(mock_client):
     mock_client = mock.MagicMock()
     mock_backend = Backend(mock_client)
     assert mock_backend.sign_up(user, pw) == 'Enter missing user or password'
-
-
-        
