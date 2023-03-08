@@ -10,7 +10,7 @@
 
     <body>
         {% include "navbar.html" %}
-
+        <!--Included this flash so if a user is redirected after logging in they are informed of it-->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <li>{{ messages[0] }}</li>

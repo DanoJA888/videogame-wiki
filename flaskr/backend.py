@@ -62,7 +62,13 @@ class Backend:
             file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
             return True
 
-            
+    '''
+    Got all the blobs from the bucket to find the user's info, in hindesight could have just checked if the blob existed,
+    from there accounted for different things, return double false list if username wasnt found, 
+    then if user existed I would read the file to get the password and hash it. 
+    if hashed password didnt match the users pw, return true false meaning un was there but wrong pw
+    anything else means the un and pw matched each other and we can return a double true list
+    '''        
     def sign_in(self, user, pw):
         bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
@@ -86,7 +92,11 @@ class Backend:
         if check_password == str(hashed_pw):
             user_and_password_match[-1] = True
         return user_and_password_match
-        
+    '''
+    Similar to sign_in that instead of iterating through blobs could have just checked directly if it existed, oh well.
+    if i found the image i would encode the bytes into a string so that i can return that and make it easier for myself later on
+    after that, if i found no  image (if image is none) then I would return a none else i would return the encoded string
+    '''    
     def get_image(self, name):
         bucket = self.storage_client.get_bucket('wikicontent')
         blobs = bucket.list_blobs()
@@ -98,5 +108,6 @@ class Backend:
                 break
         if not image:
             print('image not found')
+            return None
         else:
             return image

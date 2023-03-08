@@ -13,7 +13,7 @@ About This Wiki
 
 <h3>Your Authors</h3>
 
-<!-- TODO(Project 1): Add team members and pictures to about page. -->
+<!-- Used Jinja for loop to get the name and the image, used Jinja variables for displaying purposes, pretty cool :) -->
 {% for name, image in about_info %}
     <p>{{name}}</p>
     <img src = 'data:image/jpeg;base64, {{image}}' alt = "Daniel's Image">

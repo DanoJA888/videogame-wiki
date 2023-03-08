@@ -55,7 +55,11 @@ def make_endpoints(app, backend = Backend()):
         with page.open('r') as f:
             return f.read()
     
-
+    '''
+    route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
+    list for templating ease using Jinja in the html, rendered the template with the list containing image/name
+    **IMPORTANT** since i am returning an encoded string for the jpg, i decode it after reciving it from get_image in backend
+    '''
     @app.route("/about", methods = ['GET'])
     def about():
         images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
@@ -124,6 +128,11 @@ def make_endpoints(app, backend = Backend()):
             return redirect(request.url)
         return render_template("signup.html")
 
+    '''
+    Quite difficult for me tbh. pulled the entered info from the html form and called sign in to display different results and
+    render the appropriate templates. What I had trouble with was the login manager, more so understanding it and applying it with User
+    class
+    '''
     @app.route("/login", methods = ['GET', 'POST'])
     def login():
         if request.method == 'POST':
@@ -137,13 +146,13 @@ def make_endpoints(app, backend = Backend()):
                 return render_template('main.html')
             elif not result_of_credential_input[0]:
                 flash('Username does not exist')
-                return redirect('/login')
+                return render_template('login.html')
             else:
                 flash('Password does not macth entered username, please try again')
-                return redirect('/login')
+                return render_template('login.html')
         return render_template("login.html")
     
-    
+    '''logged out the user and flashed the message'''
     @app.route("/logout")
     @login_required
     def logout():
