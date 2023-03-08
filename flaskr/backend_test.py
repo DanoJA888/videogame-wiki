@@ -17,7 +17,7 @@ def test_get_wiki_page_success(mock_blob):
         backend.storage_client = mock.MagicMock()
         backend.storage_client.bucket.return_value.get_blob.return_value = mock_blob('Blob', 'Blob content') # Blob/page exists
         page = backend.get_wiki_page('Test Page')
-        assert page == 'Blob content'
+        assert page == ('Blob', 'Blob content')
 
 def test_get_wiki_page_failure(mock_blob):
     with mock.patch.object(Backend, '__init__', lambda x, y: None):
