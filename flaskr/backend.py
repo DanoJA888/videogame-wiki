@@ -6,8 +6,9 @@ import hashlib
 
 class Backend:
 
-    def __init__(self):
-        pass
+    def __init__(self, storage_client = storage.Client()):
+        self.storage_client = storage_client
+
       
     # Returns the requested page
     def get_wiki_page(self, name):
@@ -42,16 +43,13 @@ class Backend:
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
 
     def upload(self, file_name):
-        
-        client = storage.Client()
-        bucket = client.get_bucket('wikicontent')
+        bucket = self.storage_client.get_bucket('wikicontent')
         blob = bucket.blob(file_name)
         blob.name = file_name.split('/')[-1]
         blob.upload_from_filename(file_name)
 
     def sign_up(self, user, pw):
-        client = storage.Client()
-        bucket = client.get_bucket('userpasswordinfo')
+        bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
         blob = None
 
@@ -66,8 +64,7 @@ class Backend:
 
             
     def sign_in(self, user, pw):
-        client = storage.Client()
-        bucket = client.get_bucket('userpasswordinfo')
+        bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
         user_info = None
         user_and_password_match = [False, False]
@@ -91,8 +88,7 @@ class Backend:
         return user_and_password_match
         
     def get_image(self, name):
-        client = storage.Client()
-        bucket = client.get_bucket('wikicontent')
+        bucket = self.storage_client.get_bucket('wikicontent')
         blobs = bucket.list_blobs()
         image = None
         for blob in blobs:
