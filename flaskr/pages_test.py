@@ -10,6 +10,7 @@ import flaskr.pages
 def app():
     app = create_app({
         'TESTING': True,
+        'LOGIN_DISABLED': False
     })
     return app
 
@@ -27,31 +28,36 @@ def test_home_page(client):
 '''
 
 # TODO(Project 1): Write tests for other routes.
-def test_pages_route(client):
-    resp = client.get("/pages/")
-    assert resp.status_code == 200
 
-def test_pages_content(client):
+@mock.patch("flaskr.backend.Backend.get_all_page_names", return_value=["test1.html", "test2.html", "test3.html"])
+def test_get_all_pages(mock_get_all_page_names, client):
     resp = client.get("/pages/")
     html = resp.data.decode()
+    assert resp.status_code == 200
     assert "Pages contained in this Wiki" in html
-    
-def test_signup_route(client):
-    resp = client.get("/signup")
-    assert resp.status_code == 200
+    mock_get_all_page_names.assert_called_once_with()
 
-def test_signup_content(client):
+@mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
+def test_signup(mock_sign_up, client):
     resp = client.get("/signup")
     html = resp.data.decode()
+    assert resp.status_code == 200
     assert "Sign Up" in html
+    assert mock_sign_up("testuser", "testpw") == "User data successfully created"
 
-@mock.patch('flask_login.utils._get_user')
-def test_upload_login_required(self, client):
+@mock.patch("flaskr.backend.Backend.sign_up", return_value="Enter missing user or password")    
+def test_signup_fail(mock_sign_up, client):
+    resp = client.get("/signup")
+    html = resp.data.decode()
+    assert resp.status_code == 200
+    assert "Sign Up" in html
+    assert mock_sign_up("testuser", "testpw") == "Enter missing user or password"
+
+def test_upload_login_required(client):
     resp = client.get("/upload")
     assert resp.status_code == 401
     
-@mock.patch('flask_login.utils._get_user')
-def test_logout_login_required(self, client):
+def test_logout_login_required(client):
     resp = client.get("/logout")
     assert resp.status_code == 401
 
