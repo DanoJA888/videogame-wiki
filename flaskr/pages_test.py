@@ -85,6 +85,32 @@ def test_logout_login_required(client):
             AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
 '''
 
+def test_get_user_page_route(client):
+    page = 'sports_games.html'
+    resp = client.get(f'/pages/{page}')
+    assert resp.status_code == 200
+    assert b"FIFA" in resp.data
+
+def test_upload_route_GET_logged_out(client):
+    resp = client.get('/upload')
+    assert resp.status_code == 401
+
+def test_upload_route_GET_logged_in(client):
+    client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
+    resp = client.get('/upload')
+    assert resp.status_code == 200
+    assert b"value=Upload" in resp.data
+
+def test_upload_route_POST_logged_out(client):
+    resp = client.post('/upload', data={ 'file' : 'test'})
+    assert resp.status_code == 401
+
+def test_upload_route_POST_logged_in(client):
+    client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
+    resp = client.post('/upload', data={ 'file' : ''})
+    assert resp.status_code == 302
+
+
 
 
     
