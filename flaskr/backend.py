@@ -44,23 +44,31 @@ class Backend:
 
     def upload(self, file_name):
         bucket = self.storage_client.get_bucket('wikicontent')
-        blob = bucket.blob(file_name)
-        blob.name = file_name.split('/')[-1]
-        blob.upload_from_filename(file_name)
+        if file_name:
+            blob = bucket.blob(file_name)
+            blob.name = file_name.split('/')[-1]
+            blob.upload_from_filename(file_name)
+            return 'File uploaded to blob'
+        else:
+            return 'Ineligible filename'
 
     def sign_up(self, user, pw):
         bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
         blob = None
 
-        for item in blobs:
-            if item.name == user + ".txt":
-                return False
+        if user and pw:
+            for item in blobs:
+                if item.name == user + ".txt":
+                    return None
+            blob = bucket.blob(user + '.txt')
+            with blob.open(mode='w') as file:
+                file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
+                return 'User data successfully created'
+        else:
+            return 'Enter missing user or password'
         
-        blob = bucket.blob(user + '.txt')
-        with blob.open(mode='w') as file:
-            file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
-            return True
+        
 
             
     def sign_in(self, user, pw):
