@@ -22,13 +22,18 @@ def client(app):
 # match the changes made in the other Checkpoint Requirements.
 
 # TODO(Project 1): Write tests for other routes.
+# why remove test_home_page?
 
 @mock.patch("flaskr.backend.Backend.get_all_page_names", return_value=["test1.html", "test2.html", "test3.html"])
 def test_get_all_pages(mock_get_all_page_names, client):
     resp = client.get("/pages/")
     html = resp.data.decode()
     assert resp.status_code == 200
-    assert "Pages contained in this Wiki" in html
+    assert "Pages contained in this Wiki" in html 
+    # nit: can add more assertions to verify if the pages list is displayed 
+    assert "test1.html" in html
+    assert "test2.html" in html
+    assert "test3.html" in html
     mock_get_all_page_names.assert_called_once_with()
 
 '''Mocks get_all_pages() from flaskr.pages.
@@ -36,6 +41,8 @@ def test_get_all_pages(mock_get_all_page_names, client):
         Raises:
             AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
 '''
+
+# missing test for page/<page> route.
 
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
 def test_signup_success(mock_sign_up, client):

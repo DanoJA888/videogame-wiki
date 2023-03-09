@@ -41,7 +41,7 @@ def make_endpoints(app, backend = Backend()):
         return render_template('main.html')
 
     @app.route("/pages/<page>")
-    def get_user_page(page):
+    def get_user_page(page):# nit : name should get_wiki_page
         '''Fetches page from backend.
 
         Args:
@@ -59,7 +59,7 @@ def make_endpoints(app, backend = Backend()):
                                     '{% endblock %}',
                                     '{% block content %}',
                                     file_content,
-                                    '{% endblock %}'])
+                                    '{% endblock %}']) # nit: you can add this to the main.html itself (that way you are avoiding a file write here). only pass the content and page name
             f.write(file_content)
         rendered_page = render_template(file_name)
         os.remove(file_path)
@@ -117,7 +117,7 @@ def make_endpoints(app, backend = Backend()):
     @app.route("/pages/")
     def get_all_pages():
         pages = b.get_all_page_names()
-        return render_template("pages.html", pages=pages)
+        return render_template("pages.html", pages=pages) # nit: could have pruned the .html while displaying the pages list
 
     '''Passes a list of all blob names from wikicontent into pages.html.
         
