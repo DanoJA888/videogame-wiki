@@ -67,6 +67,7 @@ def make_endpoints(app, backend = Backend()):
         
     @app.route("/about", methods = ['GET'])
     def about():
+         # nit: you can have author_to_image_filename_map and avoid duplicating ".decode" here
         images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
         b.get_image("Sebastian_Img.jpg").decode('utf-8')]
         names = ["Daniel Aguilar", "Chris Cooper", "Sebastian Balderrama"]
