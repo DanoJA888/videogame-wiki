@@ -125,8 +125,7 @@ def make_endpoints(app, backend = Backend()):
         Returns:
             A render of the pages.html file w/ the pages list passed in.
     '''
-
-    @app.route("/signup", methods =['GET', 'POST'])
+    @app.route("/signup", methods =['GET', 'POST']) #nit: you can split into 2. one for GET which renders signup.html and POST
     def signup():       
         if request.method == 'POST':
             username = request.form['username']
@@ -134,7 +133,7 @@ def make_endpoints(app, backend = Backend()):
             if not username or not password:
                 flash("Please fill out all fields.")
                 return redirect(request.url)
-            if not b.sign_up(username, password):
+            if not b.sign_up(username, password): #instead of assuming that the only reason backend.sign_up can fail is because Username is already taken, you can raise ValueError at backend and render that error message here
                 flash("Username already taken!")
             else:
                 b.sign_up(username, password)
@@ -149,7 +148,7 @@ def make_endpoints(app, backend = Backend()):
     '''
 
 
-    @app.route("/login", methods = ['GET', 'POST'])
+    @app.route("/login", methods = ['GET', 'POST'])# split GET and POST into different methods.
     def login():
         if request.method == 'POST':
             username = request.form['username']
