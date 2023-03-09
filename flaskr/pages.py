@@ -49,7 +49,7 @@ def make_endpoints(app, backend = Backend()):
                 The name of the page to be fetched.
 
         Returns:
-            The page contents as a string.
+            The specified page contents as a string.
         '''
         file_name, file_content = b.get_wiki_page(page)
         with open(file_path:=f'flaskr/templates/{file_name}', 'w') as f:
@@ -80,7 +80,7 @@ def make_endpoints(app, backend = Backend()):
         '''Uploads user content to backend.
 
         Returns:
-            The page contents as a string.
+            The upload page contents as a string.
         '''
         if request.method == 'POST':
             if 'file' not in request.files:

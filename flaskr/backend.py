@@ -11,6 +11,15 @@ class Backend:
 
     # Returns the requested page
     def get_wiki_page(self, name):
+        '''Fetches blob from wikicontent bucket in google clous storage
+
+        Args:
+            name:
+                The name of the blob to be fetched.
+
+        Returns:
+            The name of the blob and its contents as a string.
+        '''
         bucket = self.storage_client.bucket('wikicontent')
         if not (blob := bucket.get_blob(name)):
             return 'The page does not exist.'
@@ -19,12 +28,24 @@ class Backend:
         
     # Returns a list of all the page names
     def get_all_page_names(self):
+        '''Fetches all blobs from wikicontent bucket in google clous storage
+        that contain an html page.
+
+        Returns:
+            A list of the page names as strings.
+        '''
         bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'html']
 
     # Returns a list of all the image names
     def get_all_image_names(self):
+        '''Fetches all blobs from wikicontent bucket in google clous storage
+        that contain an jpg image.
+
+        Returns:
+            A list of the image names as strings.
+        '''
         bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
