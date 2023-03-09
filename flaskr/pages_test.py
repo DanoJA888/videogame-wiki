@@ -48,10 +48,18 @@ def test_get_all_pages(mock_get_all_page_names, client):
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
 def test_signup_success(mock_sign_up, client):
     resp = client.get("/signup")
+    # you should be issuing a POST instead
+    # resp = client.post(
+      # "/signup", data={"username": "some_user", "password": "1234"})
     html = resp.data.decode()
     assert resp.status_code == 200
     assert "Sign Up" in html
+    # no point asserting this when you are explicitly mocking the return value for this interaction
+    # and this is actually calling the mock with testuser and testpw. Whereas if you have issued a POST like above,
+    # you can checking if the backend method was called :
+    # mock_sign_up.assert_called_with("some_user","1234")
     assert mock_sign_up("testuser", "testpw") == "User data successfully created"
+
 
 '''Mocks the success of signup() from flaskr.pages.
         
@@ -60,7 +68,7 @@ def test_signup_success(mock_sign_up, client):
 '''
 
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="Enter missing user or password")    
-def test_signup_fail(mock_sign_up, client):
+def test_signup_fail(mock_sign_up, client): # same comment as test_signup_success
     resp = client.get("/signup")
     html = resp.data.decode()
     assert resp.status_code == 200
