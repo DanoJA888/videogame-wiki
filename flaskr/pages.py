@@ -95,7 +95,7 @@ def make_endpoints(app, backend = Backend()):
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
                 filename = ''.join(['flaskr/uploads/', request.form['wikiname'], '.', file_extension])
-                 # Also I see you have introduced get_all_image_names only for this check. if you were to do this check inside upload() it would look like
+                # Also I see you have introduced get_all_image_names only for this check. if you were to do this check inside upload() it would look like
                 # blob = bucket.get_blob(wiki_name)
                 # if blob is not None:
                 #   raise ValueError("wiki already exists")

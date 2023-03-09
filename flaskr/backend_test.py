@@ -2,6 +2,8 @@ from flaskr.backend import Backend
 from google.cloud import storage
 from unittest import mock
 import pytest
+import base64
+import hashlib
 
 @pytest.fixture
 def mock_blob():
@@ -39,7 +41,7 @@ def test_get_all_page_names_without_jpg(mock_blob):
         page_names = backend.get_all_page_names()
         assert page_names == ['p1.html', 'p2.html', 'p3.html']
 
-def test_get_all_page_names_with_jpg(mock_blob):
+def test_get_all_page_names_with_jpg(mock_blob): #nit could be better named as test_get_all_page_names_ignores_jpg_files
     with mock.patch.object(Backend, '__init__', lambda x, y: None):
         backend = Backend(None)
         backend.storage_client = mock.MagicMock()
@@ -96,10 +98,19 @@ def test_sign_up_success(mock_client):
     pw = 'test_pw'
     mock_client = mock.MagicMock()
     mock_backend = Backend(mock_client)
-    mock_bucket = mock_client.get_bucket
-    mock_blob = mock_bucket.get_blob("test_user.txt").return_value
-    mock_blob = None
-    assert mock_backend.sign_up(user, pw) == 'User data successfully created'
+    mock_bucket = mock.MagicMock()
+    mock_blob = mock.MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.list_blobs.return_value = [mock_blob]
+    mock_bucket.blob.return_value = mock_blob
+    mock_file = mock.MagicMock()
+    mock_blob.open.return_value = mock_file
+    # mock_bucket = mock_client.get_bucket # I guess you mean mock_client.get_bucket.return_value = mock_bucket?
+    # mock_blob = mock_bucket.get_blob("test_user.txt").return_value
+    # mock_blob = None
+    assert mock_backend.sign_up(user, pw) == 'User data successfully created' # same comment as test_upload, there should be more mocks and assertions on the interactions to be able to call that this tests things properly.
+    mock_bucket.blob.assert_called_with("test_user.txt")
+    mock_blob.open.assert_called_with(mode="w") #if you can pass a mock for the hash function, you can even assert that the file is written with the hashed password!
 
 '''Passes a mocked storage.Client to Backend to test the success of sign_up().
             Args:
@@ -114,7 +125,7 @@ def test_sign_up_fail_user(mock_client):
     user = 'test_user'
     pw = ''
     mock_client = mock.MagicMock()
-    mock_backend = Backend(mock_client)
+    mock_backend = Backend(mock_client) # same comment as above. 
     assert mock_backend.sign_up(user, pw) == 'Enter missing user or password'
 
 '''Passes a mocked storage.Client to Backend to test the failure of sign_up() due to 'user' return value.
@@ -130,7 +141,7 @@ def test_sign_up_fail_pw(mock_client):
     user = ''
     pw = 'test_pw'
     mock_client = mock.MagicMock()
-    mock_backend = Backend(mock_client)
+    mock_backend = Backend(mock_client) # same comment as the test_sign_up_success.
     assert mock_backend.sign_up(user, pw) == 'Enter missing user or password'
 
 '''Passes a mocked storage.Client to Backend to test the failure of sign_up() due to 'pw' return value.

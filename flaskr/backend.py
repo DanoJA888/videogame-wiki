@@ -40,7 +40,7 @@ class Backend:
             #   f.write(blob_data)
             return 'File uploaded to blob'
         else:
-            return 'Ineligible filename'
+            return 'Ineligible filename' # prefer raising ValueError
         # comment should be on the top of the method.
     '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
         
@@ -50,21 +50,21 @@ class Backend:
 
 
     def sign_up(self, user, pw):
-        bucket = self.storage_client.get_bucket('userpasswordinfo')
+        bucket = self.storage_client.get_bucket('userpasswordinfo') #nit: bucket name can be a constant which is used across all places in this file.
         blobs = bucket.list_blobs()
         blob = None
 
         if user and pw:
-            for item in blobs:
+            for item in blobs: # instead of iterating, you could just use get_blob(user + ".txt") and see if it not None
                 if item.name == user + ".txt":
                     return None
             blob = bucket.blob(user + '.txt')
             with blob.open(mode='w') as file:
                 file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
-                return 'User data successfully created'
+                return 'User data successfully created' 
         else:
-            return 'Enter missing user or password'
-    
+            return 'Enter missing user or password' # prefer raising ValueError instead of returning error as strings. if the method doesn't throw any error, you can assume that signup succeeded in the tests (but with additional mock verifications)
+    # nit comment should preceed the method
     '''Uploads file to bucket 'userpasswordinfo' as a blob containing userdata in the event of eligible user and password.
         
         Returns:
@@ -96,7 +96,7 @@ class Backend:
         hashed_pw = hashlib.blake2b(pw.encode()).hexdigest()
         if check_password == str(hashed_pw):
             user_and_password_match[-1] = True
-        return user_and_password_match
+        return user_and_password_match # prefer raising appropriate ValueErrors - for username not valid/password not matching cases
         
     def get_image(self, name):
         bucket = self.storage_client.get_bucket('wikicontent')
