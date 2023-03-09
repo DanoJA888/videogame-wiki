@@ -78,7 +78,8 @@ def test_sign_in_fails_bc_of_password():
     assert result == [True, False]
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,
 # the test would have worked, but couldnt get it and focused on other tests
-'''
+
+@pytest.mark.skip(reason="facing TypeError")
 def test_get_image_success():
     mock_client = MagicMock()
     mock_bucket = MagicMock()
@@ -94,7 +95,7 @@ def test_get_image_success():
     b = Backend(mock_client)
     result = b.get_image('imageworks.jpg'.encode('utf-8'))
     assert result == base64.b64encode('imageworks.jpg'.encode('utf-8'))
-'''
+
 
 
 @pytest.fixture
