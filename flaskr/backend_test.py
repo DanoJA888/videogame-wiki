@@ -53,11 +53,20 @@ def test_get_all_page_names_with_jpg(mock_blob):
 
 @mock.patch("google.cloud.storage.Client")
 def test_upload_success(mock_client):
-    test_filename = 'test.jpg'
+    test_filename = 'uploads/test.jpg' #test data should have the closest thing being actually used. without this, the split logic will not be tested.
     mock_client = mock.MagicMock()
-    mock_backend = Backend(mock_client)
-    assert mock_backend.upload(test_filename) == 'File uploaded to blob'
+    mock_blob = mock.MagicMock()
+    mock_bucket = mock.MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+    
+    mock_backend = Backend(mock_client) # nit: you are passing a mock to the backend, the backend itself is not a mock. so naming it as mock_backend is misleading 
+    assert mock_backend.upload(test_filename) == 'File uploaded to blob' #ok but if you have asserted if the blob is created with the filename at least, that would be a better test (I have updated this test roughly here for reference)
+    mock_bucket.blob.assert_called_with("uploads/test.jpg")
+    assert mock_blob.name == "test.jpg"
+    mock_blob.upload_from_filename.assert_called_once_with("uploads/test.jpg")
 
+# comment should be at the top of the method
 '''Passes a mocked storage.Client to Backend to test the success of upload().
             Args:
                 mock_client: the mocked storage.Client()
@@ -70,7 +79,7 @@ def test_upload_success(mock_client):
 def test_upload_fail(mock_client):
     test_filename = ''
     mock_client = mock.MagicMock()
-    mock_backend = Backend(mock_client)
+    mock_backend = Backend(mock_client) # Another case for file already exists would have forced to mock more objects.
     assert mock_backend.upload(test_filename) == 'Ineligible filename'
 
 '''Passes a mocked storage.Client to Backend to test the failure of upload().
