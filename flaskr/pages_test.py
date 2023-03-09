@@ -120,7 +120,7 @@ def test_upload_route_POST_logged_out(client):
     resp = client.post('/upload', data={ 'file' : 'test'})
     assert resp.status_code == 401
 
-def test_upload_route_POST_logged_in(client):
+def test_upload_route_POST_logged_in(client): # backend is not getting mocked here. you could add more tests to simulate file already exists cases, upload successful cases, etc.
     client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
     resp = client.post('/upload', data={ 'file' : ''})
     assert resp.status_code == 302

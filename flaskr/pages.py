@@ -75,7 +75,7 @@ def make_endpoints(app, backend = Backend()):
         return render_template("about.html", about_info = about_info)
     
     
-    @app.route('/upload', methods=['GET', 'POST']) #nit: POST only
+    @app.route('/upload', methods=['GET', 'POST']) #nit: split GET and POST 
     @login_required
     def upload():
         '''Uploads user content to backend.
