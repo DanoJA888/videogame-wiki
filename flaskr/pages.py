@@ -94,8 +94,7 @@ def make_endpoints(app, backend = Backend()):
                 return redirect(request.url)
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
-                filename = 'flaskr/uploads/' + request.form['wikiname'] + '.html'
-                 # Also I see you have introduced get_all_image_names only for this check. if you were to do this check inside upload() it would look like
+                # Also I see you have introduced get_all_image_names only for this check. if you were to do this check inside upload() it would look like
                 # blob = bucket.get_blob(wiki_name)
                 # if blob is not None:
                 #   raise ValueError("wiki already exists")
@@ -103,6 +102,7 @@ def make_endpoints(app, backend = Backend()):
                 #   blob = self.page_bucket.blob(wiki_name)
                 #   with blob.open('wb') as f:
                 #      f.write(wiki_content)
+                filename = 'flaskr/uploads/' + request.form['wikiname'] + '.html'
                 file.save(os.path.join(filename))
                 # you don't have to save in order to upload. you could just pass the blob as file.stream.read()
                 # see https://stackoverflow.com/questions/20015550/read-file-data-without-saving-it-in-flask
