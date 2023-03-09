@@ -123,7 +123,7 @@ def test_upload_route_POST_logged_out(client):
 def test_upload_route_POST_logged_in(client): # backend is not getting mocked here. you could add more tests to simulate file already exists cases, upload successful cases, etc.
     client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
     resp = client.post('/upload', data={ 'file' : ''})
-    assert resp.status_code == 302
+    assert resp.status_code == 302 # ah this is because of the redirect. https://stackoverflow.com/questions/23146253/how-to-test-redirection-in-flask-with-python-unittest
 
 
 
