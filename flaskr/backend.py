@@ -15,7 +15,7 @@ class Backend:
         if not (blob := bucket.get_blob(name)):
             return 'The page does not exist.'
         with blob.open('r') as f:
-            return f.read()
+            return blob.name, f.read()
         
     # Returns a list of all the page names
     def get_all_page_names(self):

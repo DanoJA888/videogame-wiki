@@ -51,7 +51,19 @@ def make_endpoints(app, backend = Backend()):
         Returns:
             The page contents as a string.
         '''
-        return b.get_wiki_page(page)
+        file_name, file_content = b.get_wiki_page(page)
+        with open(file_path:=f'flaskr/templates/{file_name}', 'w') as f:
+            file_content = ''.join(['{% extends "main.html" %}',
+                                    '{% block page_name %}',
+                                    f'{file_name.split(".")[0]}',
+                                    '{% endblock %}',
+                                    '{% block content %}',
+                                    file_content,
+                                    '{% endblock %}'])
+            f.write(file_content)
+        rendered_page = render_template(file_name)
+        os.remove(file_path)
+        return rendered_page
         
     @app.route("/about", methods = ['GET'])
     def about():
@@ -82,7 +94,7 @@ def make_endpoints(app, backend = Backend()):
                 return redirect(request.url)
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
-                filename = 'flaskr/uploads/' + filename
+                filename = 'flaskr/uploads/' + request.form['wikiname'] + '.html'
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
