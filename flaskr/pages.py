@@ -89,12 +89,12 @@ def make_endpoints(app, backend = Backend()):
             file = request.files['file']
             if file.filename == '':
                 flash('No selected file')
-            elif file.filename.split('.')[-1] not in {'html', 'jpg'}:
+            elif (file_extension := file.filename.split('.')[-1]) not in {'html', 'jpg'}:
                 flash('File type not accepted')
                 return redirect(request.url)
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
-                filename = 'flaskr/uploads/' + request.form['wikiname'] + '.html'
+                filename = ''.join(['flaskr/uploads/', request.form['wikiname'], '.', file_extension])
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
