@@ -42,7 +42,6 @@ def test_get_all_pages(mock_get_all_page_names, client):
             AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
 '''
 
-# missing test for page/<page> route.
 # missing test for about/
 # nit: missing test for navbar "Signup" should show when the user is not logged in & "upload" "logout" should show when the user is logged in
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
@@ -101,7 +100,7 @@ def test_logout_login_required(client):
             AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
 '''
 
-def test_get_user_page_route(client):
+def test_get_user_page_route(client): # this is actually an integration test. if you have mocked the backend's get_wiki_page to return some content and assert on that, it would have been a unit test
     page = 'sports_games.html'
     resp = client.get(f'/pages/{page}')
     assert resp.status_code == 200
