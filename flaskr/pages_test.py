@@ -44,7 +44,7 @@ def test_get_all_pages(mock_get_all_page_names, client):
 
 # missing test for page/<page> route.
 # missing test for about/
-
+# nit: missing test for navbar "Signup" should show when the user is not logged in & "upload" "logout" should show when the user is logged in
 @mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
 def test_signup_success(mock_sign_up, client):
     resp = client.get("/signup")

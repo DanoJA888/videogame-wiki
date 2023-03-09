@@ -10,10 +10,10 @@ class User(UserMixin):
     def __init__(self, username, client, bucket):
         self.id = username
         self.username = username
-        self.client = client
+        self.client = client # given that you call login_user only after successful login, it seems too heavy for this class to have bucket and blob.
         self.bucket = bucket
         self.blob = self.bucket.get_blob(username+'.txt')
-    def get(self, username):
+    def get(self, username): # seems unnecessary?
         if self.blob:
             return User(self.id, self.client, self.bucket)
         return None
@@ -23,7 +23,7 @@ def make_endpoints(app, backend = Backend()):
     
     app.secret_key = "key"
     client = storage.Client()
-    bucket = client.get_bucket('userpasswordinfo')
+    bucket = client.get_bucket('userpasswordinfo') # client and bucket information should not be leaking in this class. The whole point of backend is to abstract away this detail
 
     login_manager = LoginManager()
     login_manager.init_app(app)
