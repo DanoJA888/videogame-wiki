@@ -9,58 +9,87 @@ class Backend:
     def __init__(self, storage_client = storage.Client()):
         self.storage_client = storage_client
 
-      
     # Returns the requested page
     def get_wiki_page(self, name):
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
-        blob = bucket.blob(name)
-        return blob if blob else 'page not found'
-        
+        '''Fetches blob from wikicontent bucket in google clous storage
 
+        Args:
+            name:
+                The name of the blob to be fetched.
+
+        Returns:
+            The name of the blob and its contents as a string.
+        '''
+        bucket = self.storage_client.bucket('wikicontent')
+        if not (blob := bucket.get_blob(name)):
+            return 'The page does not exist.'
+        with blob.open('r') as f:
+            return blob.name, f.read()
+        
     # Returns a list of all the page names
     def get_all_page_names(self):
+        '''Fetches all blobs from wikicontent bucket in google clous storage
+        that contain an html page.
 
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
+        Returns:
+            A list of the page names as strings.
+        '''
+        bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'html']
 
     # Returns a list of all the image names
     def get_all_image_names(self):
-        storage_client = storage.Client()
-        try:
-            bucket = storage_client.bucket('wikicontent')
-        except google.cloud.exceptions.NotFound:
-            return 'bucket not found'
+        '''Fetches all blobs from wikicontent bucket in google clous storage
+        that contain an jpg image.
+
+        Returns:
+            A list of the image names as strings.
+        '''
+        bucket = self.storage_client.bucket('wikicontent')
         blobs = bucket.list_blobs()
         return [blob.name for blob in blobs if blob.name.split('.')[-1] == 'jpg']
 
     def upload(self, file_name):
         bucket = self.storage_client.get_bucket('wikicontent')
-        blob = bucket.blob(file_name)
-        blob.name = file_name.split('/')[-1]
-        blob.upload_from_filename(file_name)
+        if file_name:
+            blob = bucket.blob(file_name)
+            blob.name = file_name.split('/')[-1]
+            blob.upload_from_filename(file_name)
+            return 'File uploaded to blob'
+        else:
+            return 'Ineligible filename'
+        
+    '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
+        
+        Returns:
+            Strings corresponding to expected results for unit testing.
+    '''
+
 
     def sign_up(self, user, pw):
         bucket = self.storage_client.get_bucket('userpasswordinfo')
         blobs = bucket.list_blobs()
         blob = None
 
-        for item in blobs:
-            if item.name == user + ".txt":
-                return False
+        if user and pw:
+            for item in blobs:
+                if item.name == user + ".txt":
+                    return None
+            blob = bucket.blob(user + '.txt')
+            with blob.open(mode='w') as file:
+                file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
+                return 'User data successfully created'
+        else:
+            return 'Enter missing user or password'
+
+    '''Uploads file to bucket 'userpasswordinfo' as a blob containing userdata in the event of eligible user and password.
         
-        blob = bucket.blob(user + '.txt')
-        with blob.open(mode='w') as file:
-            file.write(str(hashlib.blake2b(pw.encode()).hexdigest()))
-            return True
+        Returns:
+             Strings corresponding to expected results for unit testing.
+    '''
+        
+        
 
     '''
     Got all the blobs from the bucket to find the user's info, in hindesight could have just checked if the blob existed,
