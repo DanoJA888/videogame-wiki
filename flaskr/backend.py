@@ -108,6 +108,6 @@ class Backend:
                     image = base64.b64encode(file.read()) # nit: you can just use BytesIO from io package
                 break
         if not image:
-            print('image not found') # this code path should also have a return statement. Else it is different to add tests for this method.
+            print('image not found') # this code path should also have a return statement. Else it is difficult to add tests for this method.
         else:
             return image
