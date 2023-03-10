@@ -129,7 +129,7 @@ def test_about(client):
 # mocked a backend object using patch to see behavior of a succesful login, asserted by flashed message
 def test_login_success(client):
     with patch('flaskr.backend.Backend.sign_in'):
-        data = {'username': 'test4', 'password' : 'password'}
+        data = {'username': 'somethingelse', 'password' : 'password'} # nit : better to explicitly mock the response as [True, True]
         resp = client.post("/login", data = data)
         html = resp.data.decode()
         assert resp.status_code == 200
@@ -161,7 +161,13 @@ def test_login_failed_bc_of_pw(client):
 
 #not sure how to test this, think i need to mock a User to be logged in but am running out of time, need to comment code
 def test_logout(client):
+    with patch('flaskr.backend.Backend.sign_in') as mocked_backend:
+        mocked_backend.return_value = [True, True]
+        data = {'username': 'test4', 'password' : 'wrongpw'}
+        resp = client.post("/login", data = data)
+        assert resp.status_code == 200
+        assert b'Succesfully Logged In' in resp.data
     resp = client.get('/logout')
     html = resp.data.decode()
-    assert resp.status_code == 200
+    assert resp.status_code == 200 # you would get 401 because the LOGIN_DISABLED for the flask app is marked as False here in the test. so you should simulate a login first before calling logout
     assert 'You have logged out' in html

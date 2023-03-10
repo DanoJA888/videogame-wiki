@@ -51,9 +51,10 @@ def make_endpoints(app, backend = Backend()):
         Returns:
             The specified page contents as a string.
         '''
-        page = b.get_wiki_page(page)
-        with page.open('r') as f:
-            return f.read()
+        # this is the culprit that broke the wiki page viewer functionality in main
+        # page = b.get_wiki_page(page)
+        # with page.open('r') as f:
+        #     return f.read()
         file_name, file_content = b.get_wiki_page(page)
         with open(file_path:=f'flaskr/templates/{file_name}', 'w') as f:
             file_content = ''.join(['{% extends "main.html" %}',
@@ -150,13 +151,13 @@ def make_endpoints(app, backend = Backend()):
     render the appropriate templates. What I had trouble with was the login manager, more so understanding it and applying it with User
     class
     '''
-    @app.route("/login", methods = ['GET', 'POST'])
+    @app.route("/login", methods = ['GET', 'POST']) # nit: split get and post into different functions
     def login():
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
             result_of_credential_input = b.sign_in(username, password)
-            if result_of_credential_input[0] and result_of_credential_input[1]:
+            if result_of_credential_input[0] and result_of_credential_input[1]: # nit: prefer raising ValueError from backend and flashing the error message 
                 u = User(username, client, bucket)
                 login_user(u)
                 flash('Succesfully Logged In')

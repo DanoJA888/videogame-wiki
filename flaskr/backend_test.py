@@ -12,11 +12,11 @@ import pytest
 # extremely complicated mock, helped by Russ (SDS Section LA) to mock the client, bucket, blob list, and open, was told by Russ
 # that I didnt have to mock the hashing function or the base 64 encoding
 # testing output of sign_in method returns a succesful log in based on mocked blob(usern/pw) and expected result([true,true]), 
-# very hard to do :(
+# very hard to do :( # that's right mocking the hashing function would have made this easier
 def test_sign_in_succeeds():
     user = 'test4'
     pw = 'password'
-    
+    print("test_sign_in")
     mock_client = MagicMock()
     mock_bucket = MagicMock()
     mock_blob_list =[]
@@ -35,7 +35,7 @@ def test_sign_in_succeeds():
 
 # testing output of sign_in method returns a failed log in based on mocked blob(usern/pw)(non-existant un) and 
 # expected result[false,false], very hard to do :(
-def test_sign_in_fails_bc_of_username():
+def test_sign_in_fails_bc_of_username():# nit: could be named as "test_sign_in_fails_due_to_non_existent_username"
     user = 'test4'
     pw = 'password'
     
@@ -57,7 +57,7 @@ def test_sign_in_fails_bc_of_username():
 
 # testing output of sign_in method returns a failed log in based on mocked blob(usern/pw)(wrong pw) and expected result[true,false], 
 # very hard to do :(
-def test_sign_in_fails_bc_of_password():
+def test_sign_in_fails_bc_of_password(): # nit: could be named as test_sign_in_fails_due_to_mismatching_password
     user = 'test4'
     pw = 'password'
     
@@ -78,7 +78,7 @@ def test_sign_in_fails_bc_of_password():
     assert result == [True, False]
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,
 # the test would have worked, but couldnt get it and focused on other tests
-'''
+
 def test_get_image_success():
     mock_client = MagicMock()
     mock_bucket = MagicMock()
@@ -87,14 +87,14 @@ def test_get_image_success():
     mock_blob_list.append(mock_blob)
     mock_client.get_bucket.return_value = mock_bucket
     mock_bucket.list_blobs.return_value = mock_blob_list
-    mock_blob.name = 'imageworks.jpg'.encode('utf-8')
+    mock_blob.name = 'some_name' # you don't need to encode the name of the blob
     mock_blob_open = MagicMock()
-    mock_blob_open.__enter__.return_value.read.return_value = base64.b64encode('imageworks.jpg'.encode('utf-8'))
+    mock_blob_open.__enter__.return_value.read.return_value = b'something' # the file itself has to return only a string. the encoding is done after the file.read 
     mock_blob.open.return_value = mock_blob_open
     b = Backend(mock_client)
-    result = b.get_image('imageworks.jpg'.encode('utf-8'))
-    assert result == base64.b64encode('imageworks.jpg'.encode('utf-8'))
-'''
+    result = b.get_image('some_name') 
+    assert result == base64.b64encode(b'something') # if you looked at the error message "TypeError: a bytes-like object is required, not 'str'" it just expected you to pass a byte. The b literal in front of the string literal means that the given string is in bytes' format. 
+
 
 
 @pytest.fixture
