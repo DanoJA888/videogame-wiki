@@ -49,29 +49,17 @@ def make_endpoints(app, backend = Backend()):
                 The name of the page to be fetched.
 
         Returns:
-            The specified page contents as a string.
+            The page contents as a string.
         '''
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
-        file_name, file_content = b.get_wiki_page(page)
-        with open(file_path:=f'flaskr/templates/{file_name}', 'w') as f:
-            file_content = ''.join(['{% extends "main.html" %}',
-                                    '{% block page_name %}',
-                                    f'{file_name.split(".")[0]}',
-                                    '{% endblock %}',
-                                    '{% block content %}',
-                                    file_content,
-                                    '{% endblock %}'])
-            f.write(file_content)
-        rendered_page = render_template(file_name)
-        os.remove(file_path)
-        return rendered_page
+    
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
     list for templating ease using Jinja in the html, rendered the template with the list containing image/name
     **IMPORTANT** since i am returning an encoded string for the jpg, i decode it after reciving it from get_image in backend
-    '''   
+    '''
     @app.route("/about", methods = ['GET'])
     def about():
         images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
@@ -87,7 +75,7 @@ def make_endpoints(app, backend = Backend()):
         '''Uploads user content to backend.
 
         Returns:
-            The upload page contents as a string.
+            Tha page contents as a string.
         '''
         if request.method == 'POST':
             if 'file' not in request.files:
@@ -96,12 +84,12 @@ def make_endpoints(app, backend = Backend()):
             file = request.files['file']
             if file.filename == '':
                 flash('No selected file')
-            elif (file_extension := file.filename.split('.')[-1]) not in {'html', 'jpg'}:
+            elif file.filename.split('.')[-1] not in {'html', 'jpg'}:
                 flash('File type not accepted')
                 return redirect(request.url)
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
-                filename = ''.join(['flaskr/uploads/', request.form['wikiname'], '.', file_extension])
+                filename = 'flaskr/uploads/' + filename
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
@@ -113,17 +101,19 @@ def make_endpoints(app, backend = Backend()):
 
     @app.route("/pages/")
     def get_all_pages():
+        
+        '''Passes a list of all blobs from wikicontent into pages.html.
+        
+            Returns:
+                A render of the pages.html file w/ the pages list passed in.
+        '''
+
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
-    '''Passes a list of all blob names from wikicontent into pages.html.
-        
-        Returns:
-            A render of the pages.html file w/ the pages list passed in.
-    '''
-
     @app.route("/signup", methods =['GET', 'POST'])
-    def signup():       
+    def signup():
+        
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -137,13 +127,6 @@ def make_endpoints(app, backend = Backend()):
                 flash("Successful sign-up!")
             return redirect(request.url)
         return render_template("signup.html")
-
-    
-    '''Passes sign-up form information to backend to create user data.
-        
-        Returns:
-            A render of the signup.html file w/ form content.
-    '''
 
     '''
     Quite difficult for me tbh. pulled the entered info from the html form and called sign in to display different results and

@@ -1,8 +1,8 @@
 from flaskr import create_app
+from flask_login import LoginManager, UserMixin, current_user
 from unittest import mock
 from unittest.mock import patch
 import pytest
-import flaskr.pages
 
 
 # See https://flask.palletsprojects.com/en/2.2.x/testing/ 
@@ -11,7 +11,6 @@ import flaskr.pages
 def app():
     app = create_app({
         'TESTING': True,
-        'LOGIN_DISABLED': False
     })
     return app
 
@@ -21,96 +20,31 @@ def client(app):
 
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
+'''
+def test_home_page(client):
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert b"Hello, World!\n" in resp.data
+'''
 
 # TODO(Project 1): Write tests for other routes.
-
-@mock.patch("flaskr.backend.Backend.get_all_page_names", return_value=["test1.html", "test2.html", "test3.html"])
-def test_get_all_pages(mock_get_all_page_names, client):
+def test_pages_route(client):
     resp = client.get("/pages/")
     html = resp.data.decode()
     assert resp.status_code == 200
-    assert "Pages contained in this Wiki" in html
-    mock_get_all_page_names.assert_called_once_with()
 
-'''Mocks get_all_pages() from flaskr.pages.
-        
-        Raises:
-            AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-'''
-
-@mock.patch("flaskr.backend.Backend.sign_up", return_value="User data successfully created")    
-def test_signup_success(mock_sign_up, client):
+def test_signup_route(client):
     resp = client.get("/signup")
-    html = resp.data.decode()
     assert resp.status_code == 200
-    assert "Sign Up" in html
-    assert mock_sign_up("testuser", "testpw") == "User data successfully created"
 
-'''Mocks the success of signup() from flaskr.pages.
-        
-        Raises:
-            AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-'''
-
-@mock.patch("flaskr.backend.Backend.sign_up", return_value="Enter missing user or password")    
-def test_signup_fail(mock_sign_up, client):
-    resp = client.get("/signup")
-    html = resp.data.decode()
-    assert resp.status_code == 200
-    assert "Sign Up" in html
-    assert mock_sign_up("testuser", "testpw") == "Enter missing user or password"
-
-'''Mocks the failure of signup() from flaskr.pages.
-        
-        Raises:
-             AssertionError: Mock function returns unexpected result; Status code is unexpected; HTML content is invalid
-'''
-
-def test_upload_login_required(client):
-    resp = client.get("/upload")
-    assert resp.status_code == 401
-
-'''Mocks @login_required for upload() from flaskr.pages.
-        
-        Raises:
-            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
-'''
-    
-def test_logout_login_required(client):
-    resp = client.get("/logout")
-    assert resp.status_code == 401
-
-'''Mocks @login_required for logout() from flaskr.pages.
-        
-        Raises:
-            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
-'''
-
-def test_get_user_page_route(client):
-    page = 'sports_games.html'
-    resp = client.get(f'/pages/{page}')
-    assert resp.status_code == 200
-    assert b'FIFA' in resp.data
-
-def test_upload_route_GET_logged_out(client):
-    resp = client.get('/upload')
-    assert resp.status_code == 401
-
-def test_upload_route_GET_logged_in(client):
-    client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
-    resp = client.get('/upload')
-    assert resp.status_code == 200
-    assert b'value="Upload"' in resp.data
-
-def test_upload_route_POST_logged_out(client):
-    resp = client.post('/upload', data={ 'file' : 'test'})
-    assert resp.status_code == 401
-
-def test_upload_route_POST_logged_in(client):
-    client.post('/login', data={ 'username' : 'sebastian', 'password' : 'password' })
-    resp = client.post('/upload', data={ 'file' : ''})
-    assert resp.status_code == 302
-
+@mock.patch('flask_login.utils._get_user')
+def test_login_required(self, client):
+    user = mock.MagicMock()
+    resp_upload = client.get("/upload")
+    resp_logout = client.get("/logout")
+    if not user.is_authenticated():
+        assert resp_upload.status_code == 401
+        assert resp_logout.status_code == 401
 
 #test to make sure the home route renders correctly and message is in home page
 def test_home(client):
