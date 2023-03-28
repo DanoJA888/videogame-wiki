@@ -7,20 +7,22 @@ import os
 
 
 class User(UserMixin):
+
     def __init__(self, username, client, bucket):
         self.id = username
         self.username = username
         self.client = client
         self.bucket = bucket
-        self.blob = self.bucket.get_blob(username+'.txt')
+        self.blob = self.bucket.get_blob(username + '.txt')
+
     def get(self, username):
         if self.blob:
             return User(self.id, self.client, self.bucket)
         return None
 
 
-def make_endpoints(app, backend = Backend()):
-    
+def make_endpoints(app, backend=Backend()):
+
     app.secret_key = "key"
     client = storage.Client()
     bucket = client.get_bucket('userpasswordinfo')
@@ -32,7 +34,6 @@ def make_endpoints(app, backend = Backend()):
     @login_manager.user_loader
     def load_user(username):
         return User(username, client, bucket).get(username)
-
 
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -54,21 +55,24 @@ def make_endpoints(app, backend = Backend()):
         page = b.get_wiki_page(page)
         with page.open('r') as f:
             return f.read()
-    
+
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
     list for templating ease using Jinja in the html, rendered the template with the list containing image/name
     **IMPORTANT** since i am returning an encoded string for the jpg, i decode it after reciving it from get_image in backend
     '''
-    @app.route("/about", methods = ['GET'])
+
+    @app.route("/about", methods=['GET'])
     def about():
-        images = [b.get_image("Daniel_Image.jpg").decode('utf-8'), b.get_image("Chris_Image.jpg").decode('utf-8'), 
-        b.get_image("Sebastian_Img.jpg").decode('utf-8')]
+        images = [
+            b.get_image("Daniel_Image.jpg").decode('utf-8'),
+            b.get_image("Chris_Image.jpg").decode('utf-8'),
+            b.get_image("Sebastian_Img.jpg").decode('utf-8')
+        ]
         names = ["Daniel Aguilar", "Chris Cooper", "Sebastian Balderrama"]
         about_info = zip(names, images)
-        return render_template("about.html", about_info = about_info)
-    
-    
+        return render_template("about.html", about_info=about_info)
+
     @app.route('/upload', methods=['GET', 'POST'])
     @login_required
     def upload():
@@ -101,7 +105,6 @@ def make_endpoints(app, backend = Backend()):
 
     @app.route("/pages/")
     def get_all_pages():
-        
         '''Passes a list of all blobs from wikicontent into pages.html.
         
             Returns:
@@ -111,9 +114,9 @@ def make_endpoints(app, backend = Backend()):
         pages = b.get_all_page_names()
         return render_template("pages.html", pages=pages)
 
-    @app.route("/signup", methods =['GET', 'POST'])
+    @app.route("/signup", methods=['GET', 'POST'])
     def signup():
-        
+
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -133,7 +136,8 @@ def make_endpoints(app, backend = Backend()):
     render the appropriate templates. What I had trouble with was the login manager, more so understanding it and applying it with User
     class
     '''
-    @app.route("/login", methods = ['GET', 'POST'])
+
+    @app.route("/login", methods=['GET', 'POST'])
     def login():
         if request.method == 'POST':
             username = request.form['username']
@@ -148,16 +152,17 @@ def make_endpoints(app, backend = Backend()):
                 flash('Username does not exist')
                 return render_template('login.html')
             else:
-                flash('Password does not macth entered username, please try again')
+                flash(
+                    'Password does not macth entered username, please try again'
+                )
                 return render_template('login.html')
         return render_template("login.html")
-    
+
     '''logged out the user and flashed the message'''
+
     @app.route("/logout")
     @login_required
     def logout():
         logout_user()
         flash('You have logged out')
         return render_template('logout.html')
-
-    
