@@ -50,11 +50,19 @@ def make_endpoints(app, backend=Backend()):
                 The name of the page to be fetched.
 
         Returns:
-            The page contents as a string.
+            The specified page contents as a string.
         '''
-        page = b.get_wiki_page(page)
-        with page.open('r') as f:
-            return f.read()
+        file_name, file_content = b.get_wiki_page(page)
+        with open(file_path := f'flaskr/templates/{file_name}', 'w') as f:
+            file_content = ''.join([
+                '{% extends "main.html" %}', '{% block page_name %}',
+                f'{file_name.split(".")[0]}', '{% endblock %}',
+                '{% block content %}', file_content, '{% endblock %}'
+            ])
+            f.write(file_content)
+        rendered_page = render_template(file_name)
+        os.remove(file_path)
+        return rendered_page
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
@@ -79,7 +87,7 @@ def make_endpoints(app, backend=Backend()):
         '''Uploads user content to backend.
 
         Returns:
-            Tha page contents as a string.
+            The upload page contents as a string.
         '''
         if request.method == 'POST':
             if 'file' not in request.files:
@@ -88,12 +96,16 @@ def make_endpoints(app, backend=Backend()):
             file = request.files['file']
             if file.filename == '':
                 flash('No selected file')
-            elif file.filename.split('.')[-1] not in {'html', 'jpg'}:
+            elif (file_extension :=
+                  file.filename.split('.')[-1]) not in {'html', 'jpg'}:
                 flash('File type not accepted')
                 return redirect(request.url)
             filename = secure_filename(file.filename)
             if filename not in b.get_all_page_names() + b.get_all_image_names():
-                filename = 'flaskr/uploads/' + filename
+                filename = ''.join([
+                    'flaskr/uploads/', request.form['wikiname'], '.',
+                    file_extension
+                ])
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
@@ -131,6 +143,11 @@ def make_endpoints(app, backend=Backend()):
             return redirect(request.url)
         return render_template("signup.html")
 
+    '''Passes sign-up form information to backend to create user data.
+        
+        Returns:
+            A render of the signup.html file w/ form content.
+    '''
     '''
     Quite difficult for me tbh. pulled the entered info from the html form and called sign in to display different results and
     render the appropriate templates. What I had trouble with was the login manager, more so understanding it and applying it with User

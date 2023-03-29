@@ -6,7 +6,9 @@
 
 {% block content %}
 <form method='POST' enctype="multipart/form-data">
-    <input type=file name=file>
-    <input type=submit value=Upload>
+    <input type="text" name="wikiname" placeholder="wikiname">
+    <input type="file" name="file">
+    <input type="submit" value="Upload">
+
 </form>
 {% endblock %}
