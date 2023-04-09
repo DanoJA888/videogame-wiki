@@ -106,6 +106,8 @@ def make_endpoints(app, backend=Backend()):
                     'flaskr/uploads/', request.form['wikiname'], '.',
                     file_extension
                 ])
+                if file_extension == 'html':
+                    b.create_comment_section(filename)
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
