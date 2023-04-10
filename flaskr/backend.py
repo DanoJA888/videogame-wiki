@@ -3,6 +3,7 @@
 from google.cloud import storage
 import base64
 import hashlib
+import json
 
 
 class Backend:
@@ -145,3 +146,13 @@ class Backend:
             return None
         else:
             return image
+
+    def get_section(self, name):
+        bucket = self.storage_client.get_bucket('commentsection')
+        cs_name = name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        if not blob:
+            return 'Comment Section Not Found'
+        comments_as_json = blob.download_as_text()
+        comments = json.loads(comments_as_json)
+        return comments

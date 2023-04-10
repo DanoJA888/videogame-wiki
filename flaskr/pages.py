@@ -53,14 +53,23 @@ def make_endpoints(app, backend=Backend()):
             The specified page contents as a string.
         '''
         file_name, file_content = b.get_wiki_page(page)
+        comments = b.get_section(page)
         with open(file_path := f'flaskr/templates/{file_name}', 'w') as f:
             file_content = ''.join([
                 '{% extends "main.html" %}', '{% block page_name %}',
                 f'{file_name.split(".")[0]}', '{% endblock %}',
-                '{% block content %}', file_content, '{% endblock %}'
+                '{% block content %}',
+                 file_content,
+                 '<h3>Comments</h3>',
+                 '{% for username, comment in comments %}',
+                 '<p style = "font-weight: bold;"> {{username}} </p>',
+                 '<p style = "text-indent: 10px;"> {{comment}} </p>',
+                 '<br>',
+                 '{% endfor %}',
+                 '{% endblock %}'
             ])
             f.write(file_content)
-        rendered_page = render_template(file_name)
+        rendered_page = render_template(file_name, comments = comments)
         os.remove(file_path)
         return rendered_page
 
