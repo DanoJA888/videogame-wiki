@@ -57,7 +57,8 @@ def make_endpoints(app, backend=Backend()):
             file_content = ''.join([
                 '{% extends "main.html" %}', '{% block page_name %}',
                 f'{file_name.split(".")[0]}', '{% endblock %}',
-                '{% block content %}', file_content, '{% endblock %}'
+                '{% block content %}', file_content, '{% include "add_comment.html" %}',
+                '{% endblock %}'
             ])
             f.write(file_content)
         rendered_page = render_template(file_name)
