@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, flash, url_for, make_response
+from flask import render_template, redirect, request, flash, url_for, make_response, Markup
 from flaskr.backend import Backend
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, UserMixin
@@ -53,16 +53,9 @@ def make_endpoints(app, backend=Backend()):
             The specified page contents as a string.
         '''
         file_name, file_content = b.get_wiki_page(page)
-        with open(file_path := f'flaskr/templates/{file_name}', 'w') as f:
-            file_content = ''.join([
-                '{% extends "main.html" %}', '{% block page_name %}',
-                f'{file_name.split(".")[0]}', '{% endblock %}',
-                '{% block content %}', file_content, '{% endblock %}'
-            ])
-            f.write(file_content)
-        rendered_page = render_template(file_name)
-        os.remove(file_path)
-        return rendered_page
+        return render_template('user.html',
+                               page_name=f'{file_name.split(".")[0]}',
+                               content=Markup(file_content))
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
