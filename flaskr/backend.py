@@ -148,11 +148,14 @@ class Backend:
             return image
 
     def create_comment_section(self, name):
-        bucket = self.storage_client.get_bucket('commentsection')
-        comment_section = []
-        json_lst = json.dumps(comment_section)
-        name_with_html = name.split('/')[-1]
-        page_name = name_with_html.split('.')[0] +'.json'
-        blob = bucket.blob(page_name)
-        blob.upload_from_string(json_lst, content_type = 'application/json')
-        return 'Comment Section Created'
+        if name:
+            bucket = self.storage_client.get_bucket('commentsection')
+            comment_section = []
+            json_lst = json.dumps(comment_section)
+            name_with_html = name.split('/')[-1]
+            page_name = name_with_html.split('.')[0] +'.json'
+            blob = bucket.blob(page_name)
+            blob.upload_from_string(json_lst, content_type = 'application/json')
+            return 'Comment Section Created'
+        else:
+            return 'Could Not Create Comment Section'
