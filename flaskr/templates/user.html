@@ -8,6 +8,7 @@
     {{ content }}
 
     <h3>Comments</h3>
+    {% include 'add_comment.html' %}
     {% for username, comment in comments %}
         <p style = "font-weight: bold;">{{username}}</p>
         <p>{{comment}}</p>
