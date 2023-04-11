@@ -41,7 +41,7 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
-    @app.route("/pages/<page>",  methods = ['GET', 'POST'])
+    @app.route("/pages/<page>", methods=['GET', 'POST'])
     def get_user_page(page):
         '''Fetches page from backend.
 
@@ -52,8 +52,10 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
+        # added a post request to actually update the comment section, still unsure how to make it so that it posts
+        # without reloading
         file_name, file_content = b.get_wiki_page(page)
-        comments= b.get_section(page)
+        comments = b.get_section(page)
         if request.method == 'POST':
             un = current_user.username
             comment = request.form['comment']
@@ -61,14 +63,15 @@ def make_endpoints(app, backend=Backend()):
             comments = b.get_section(page)
             flash('Comment Posted!')
             return render_template('user.html',
-                               page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content),
-                               comments = comments)
-            
+                                   page_name=f'{file_name.split(".")[0]}',
+                                   content=Markup(file_content),
+                                   comments=comments)
+
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
                                content=Markup(file_content),
-                               comments = comments)
+                               comments=comments)
+
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
     list for templating ease using Jinja in the html, rendered the template with the list containing image/name
