@@ -147,6 +147,12 @@ class Backend:
         else:
             return image
 
+    '''
+    function that pulls the comment section of the respective page. Again, since I am using lists and cant store directly
+    i am getting the json string and converting it back to a list and returning that. if it exists ill be returning a python list
+    with the comments, else im not returning anything other than a fail message
+    '''
+
     def get_section(self, name):
         bucket = self.storage_client.get_bucket('commentsection')
         cs_name = name.split('.')[0] + '.json'

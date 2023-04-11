@@ -57,7 +57,7 @@ def make_endpoints(app, backend=Backend()):
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
                                content=Markup(file_content),
-                               comments = comments)
+                               comments=comments)
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
