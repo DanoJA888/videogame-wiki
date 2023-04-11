@@ -162,7 +162,7 @@ class Backend:
         comments_as_json = blob.download_as_text()
         comments = json.loads(comments_as_json)
         return comments
-    
+
     '''
     Function that adds a new comment to the comment section.
     I retireve the list from the bucket, since it can only store files i made the list a json string when storing,

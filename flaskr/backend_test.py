@@ -248,7 +248,7 @@ def test_get_comments_success():
     result = b.get_section(name)
     assert result == []
 
-    
+
 # unit test that checks the success of a valid comment
 def test_make_comment_success():
     username = 'daniel'
@@ -281,8 +281,6 @@ def test_get_comments_fail():
     assert result == 'Comment Section Not Found'
 
 
-
-
 # unit test that checks the failure of an invalid comment
 def test_make_comment_fails():
     username = 'this should pass and print empty list'
@@ -300,8 +298,6 @@ def test_make_comment_fails():
     b = Backend(mock_client)
     result = b.make_comment(page_name, username, comment)
     assert result == []
-    
-    
 
 
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,
