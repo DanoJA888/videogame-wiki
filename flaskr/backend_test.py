@@ -234,6 +234,21 @@ def test_sign_in_fails_bc_of_password():
     assert result == [True, False]
 
 
+#unit tests that checks the success of an existing comment section being returned
+def test_get_comments_success():
+    name = 'whatever.json'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == []
+
+
 # unit test that checks the success of a valid comment
 def test_make_comment_success():
     username = 'daniel'
@@ -251,6 +266,21 @@ def test_make_comment_success():
     assert result == [('daniel', 'this is a test')]
 
 
+#unit test that checks the correct message is sent if a comment doesnt exist
+def test_get_comments_fail():
+    name = 'unvalid'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = None
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == 'Comment Section Not Found'
+
+
 # unit test that checks the failure of an invalid comment
 def test_make_comment_fails():
     username = 'this should pass and print empty list'
@@ -260,6 +290,8 @@ def test_make_comment_fails():
     mock_bucket = MagicMock()
     mock_blob = MagicMock()
     mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = None
+    mock_blob.download_as_text.return_value = '[]'
     mock_bucket.get_blob.return_value = mock_blob
     mock_blob.download_as_text.return_value = '[]'
 

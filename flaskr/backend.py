@@ -148,6 +148,22 @@ class Backend:
             return image
 
     '''
+    function that pulls the comment section of the respective page. Again, since I am using lists and cant store directly
+    i am getting the json string and converting it back to a list and returning that. if it exists ill be returning a python list
+    with the comments, else im not returning anything other than a fail message
+    '''
+
+    def get_section(self, name):
+        bucket = self.storage_client.get_bucket('commentsection')
+        cs_name = name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        if not blob:
+            return 'Comment Section Not Found'
+        comments_as_json = blob.download_as_text()
+        comments = json.loads(comments_as_json)
+        return comments
+
+    '''
     Function that adds a new comment to the comment section.
     I retireve the list from the bucket, since it can only store files i made the list a json string when storing,
     so i convert the string into a python list, append the new comment, convert it back to a json string and upload to bucket
