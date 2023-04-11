@@ -147,15 +147,22 @@ class Backend:
         else:
             return image
 
-    def create_comment_section(self, name):
+    '''
+    function that creates a new comment section. Since buckets can't store python lists directly, converted the lists 
+    into json strings and stored that in the bucket instead. In theory, if th eusers upload the pages, i should create a cs
+    whenever a valid file is uploaded
+    In pages.py, in the upload() function notice the if statement checking if the file is of html type
+    '''
+
+    def create_comment_section(self, name=None):
         if name:
             bucket = self.storage_client.get_bucket('commentsection')
             comment_section = []
             json_lst = json.dumps(comment_section)
             name_with_html = name.split('/')[-1]
-            page_name = name_with_html.split('.')[0] +'.json'
+            page_name = name_with_html.split('.')[0] + '.json'
             blob = bucket.blob(page_name)
-            blob.upload_from_string(json_lst, content_type = 'application/json')
+            blob.upload_from_string(json_lst, content_type='application/json')
             return 'Comment Section Created'
         else:
             return 'Could Not Create Comment Section'

@@ -233,6 +233,33 @@ def test_sign_in_fails_bc_of_password():
     assert result == [True, False]
 
 
+# unit test that checks for correct message if the comment section is correctly created with a valid name
+def test_create_comment_section_success():
+    name = 'flaskr/uploads/whatever.html'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section(name)
+    assert result == 'Comment Section Created'
+
+
+# unit test that checks for correct message if the comment section is incorrectly created without a valid name
+def test_create_comment_section_fail():
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section()
+    assert result == 'Could Not Create Comment Section'
+
+
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,
 # the test would have worked, but couldnt get it and focused on other tests
 '''
