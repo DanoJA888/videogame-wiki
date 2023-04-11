@@ -41,7 +41,8 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
-    @app.route("/pages/<page>")
+    # not sure why but if i take the comma off the function params it doesnt work but if i keep it it works...
+    @app.route("/pages/<page>", methods=['GET', 'POST'])
     def get_user_page(page):
         '''Fetches page from backend.
 
@@ -52,10 +53,25 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
+        # added a post request to actually update the comment section, still unsure how to make it so that it posts
+        # without reloading
         file_name, file_content = b.get_wiki_page(page)
+        comments = b.get_section(page)
+        if request.method == 'POST':
+            un = current_user.username
+            comment = request.form['comment']
+            b.make_comment(page, un, comment)
+            comments = b.get_section(page)
+            flash('Comment Posted!')
+            return render_template('user.html',
+                                   page_name=f'{file_name.split(".")[0]}',
+                                   content=Markup(file_content),
+                                   comments=comments)
+
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content))
+                               content=Markup(file_content),
+                               comments=comments)
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
@@ -99,6 +115,8 @@ def make_endpoints(app, backend=Backend()):
                     'flaskr/uploads/', request.form['wikiname'], '.',
                     file_extension
                 ])
+                if file_extension == 'html':
+                    b.create_comment_section(filename)
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)

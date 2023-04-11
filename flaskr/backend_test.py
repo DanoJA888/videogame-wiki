@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from unittest.mock import Mock
 import hashlib
 import base64
+import json
 
 
 @pytest.fixture
@@ -231,6 +232,97 @@ def test_sign_in_fails_bc_of_password():
     b = Backend(mock_client)
     result = b.sign_in(user, 'wrongpassword')
     assert result == [True, False]
+
+
+# unit test that checks the success of a valid comment
+def test_make_comment_success():
+    username = 'daniel'
+    page_name = 'whatever.json'
+    comment = 'this is a test'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.make_comment(page_name, username, comment)
+    assert result == [('daniel', 'this is a test')]
+
+
+# unit test that checks the failure of an invalid comment
+def test_make_comment_fails():
+    username = 'this should pass and print empty list'
+    page_name = 'whatever.json'
+    comment = ''
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.make_comment(page_name, username, comment)
+    assert result == []
+
+
+#unit tests that checks the success of an existing comment section being returned
+def test_get_comments_success():
+    name = 'whatever.json'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == []
+
+
+#unit test that checks the correct message is sent if a comment doesnt exist
+def test_get_comments_fail():
+    name = 'unvalid'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = None
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == 'Comment Section Not Found'
+
+
+# unit test that checks for correct message if the comment section is correctly created with a valid name
+def test_create_comment_section_success():
+    name = 'flaskr/uploads/whatever.html'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section(name)
+    assert result == 'Comment Section Created'
+
+
+# unit test that checks for correct message if the comment section is incorrectly created without a valid name
+def test_create_comment_section_fail():
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section()
+    assert result == 'Could Not Create Comment Section'
 
 
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,

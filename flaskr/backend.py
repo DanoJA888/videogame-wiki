@@ -3,6 +3,7 @@
 from google.cloud import storage
 import base64
 import hashlib
+import json
 
 
 class Backend:
@@ -145,3 +146,60 @@ class Backend:
             return None
         else:
             return image
+
+    '''
+    Function that adds a new comment to the comment section.
+    I retireve the list from the bucket, since it can only store files i made the list a json string when storing,
+    so i convert the string into a python list, append the new comment, convert it back to a json string and upload to bucket
+    Return values: for unit tests: if it is successful, return list with new comment, else return empty list
+    
+    '''
+
+    def make_comment(self, page_name, username, comment):
+        bucket = self.storage_client.get_bucket('commentsection')
+        if comment != '':
+            cs_name = page_name.split('.')[0] + '.json'
+            blob = bucket.get_blob(cs_name)
+            comment_as_json = blob.download_as_text()
+            comment_section = json.loads(comment_as_json)
+            comment_section.append((username, comment))
+            updated_cs = json.dumps(comment_section)
+            blob.upload_from_string(updated_cs, content_type='application/json')
+            return comment_section
+        return []
+
+    '''
+    function that pulls the comment section of the respective page. Again, since I am using lists and cant store directly
+    i am getting the json string and converting it back to a list and returning that. if it exists ill be returning a python list
+    with the comments, else im not returning anything other than a fail message
+    '''
+
+    def get_section(self, name):
+        bucket = self.storage_client.get_bucket('commentsection')
+        cs_name = name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        if not blob:
+            return 'Comment Section Not Found'
+        comments_as_json = blob.download_as_text()
+        comments = json.loads(comments_as_json)
+        return comments
+
+    '''
+    function that creates a new comment section. Since buckets can't store python lists directly, converted the lists 
+    into json strings and stored that in the bucket instead. In theory, if th eusers upload the pages, i should create a cs
+    whenever a valid file is uploaded
+    In pages.py, in the upload() function notice the if statement checking if the file is of html type
+    '''
+
+    def create_comment_section(self, name=None):
+        if name:
+            bucket = self.storage_client.get_bucket('commentsection')
+            comment_section = []
+            json_lst = json.dumps(comment_section)
+            name_with_html = name.split('/')[-1]
+            page_name = name_with_html.split('.')[0] + '.json'
+            blob = bucket.blob(page_name)
+            blob.upload_from_string(json_lst, content_type='application/json')
+            return 'Comment Section Created'
+        else:
+            return 'Could Not Create Comment Section'
