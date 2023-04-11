@@ -53,7 +53,9 @@ def make_endpoints(app, backend=Backend()):
             The specified page contents as a string.
         '''
         file_name, file_content = b.get_wiki_page(page)
-        return render_template('user.html', page_name=f'{file_name.split(".")[0]}', content=Markup(file_content))
+        return render_template('user.html',
+                               page_name=f'{file_name.split(".")[0]}',
+                               content=Markup(file_content))
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
