@@ -41,7 +41,7 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
-    @app.route("/pages/<page>")
+    @app.route("/pages/<page>",  methods = ['GET', 'POST'])
     def get_user_page(page):
         '''Fetches page from backend.
 
@@ -53,10 +53,22 @@ def make_endpoints(app, backend=Backend()):
             The specified page contents as a string.
         '''
         file_name, file_content = b.get_wiki_page(page)
+        comments= b.get_section(page)
+        if request.method == 'POST':
+            un = current_user.username
+            comment = request.form['comment']
+            b.make_comment(page, un, comment)
+            comments = b.get_section(page)
+            flash('Comment Posted!')
+            return render_template('user.html',
+                               page_name=f'{file_name.split(".")[0]}',
+                               content=Markup(file_content),
+                               comments = comments)
+            
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content))
-
+                               content=Markup(file_content),
+                               comments = comments)
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
     list for templating ease using Jinja in the html, rendered the template with the list containing image/name
