@@ -3,6 +3,7 @@
 from google.cloud import storage
 import base64
 import hashlib
+import json
 
 
 class Backend:
@@ -145,3 +146,24 @@ class Backend:
             return None
         else:
             return image
+
+    '''
+    Function that adds a new comment to the comment section.
+    I retireve the list from the bucket, since it can only store files i made the list a json string when storing,
+    so i convert the string into a python list, append the new comment, convert it back to a json string and upload to bucket
+    Return values: for unit tests: if it is successful, return list with new comment, else return empty list
+    
+    '''
+
+    def make_comment(self, page_name, username, comment):
+        bucket = self.storage_client.get_bucket('commentsection')
+        if comment != '':
+            cs_name = page_name.split('.')[0] + '.json'
+            blob = bucket.get_blob(cs_name)
+            comment_as_json = blob.download_as_text()
+            comment_section = json.loads(comment_as_json)
+            comment_section.append((username, comment))
+            updated_cs = json.dumps(comment_section)
+            blob.upload_from_string(updated_cs, content_type='application/json')
+            return comment_section
+        return []
