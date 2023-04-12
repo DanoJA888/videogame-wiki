@@ -30,14 +30,14 @@ def test_home_page(client):
 
 
 # TODO(Project 1): Write tests for other routes.
-@mock.patch("flaskr.backend.Backend.get_all_page_names",
+@mock.patch("flaskr.backend.Backend.get_page_rankings",
             return_value=["test1.html", "test2.html", "test3.html"])
-def integration_get_all_pages(mock_get_all_page_names, client):
+def integration_get_all_pages(mock_get_page_rankings, client):
     resp = client.get("/pages/")
     html = resp.data.decode()
     assert resp.status_code == 200
     assert "Pages contained in this Wiki" in html
-    mock_get_all_page_names.assert_called_once_with()
+    mock_get_page_rankings.assert_called_once_with()
 
 
 '''Mocks get_all_pages() from flaskr.pages.

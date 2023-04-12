@@ -9,6 +9,8 @@ class Backend:
 
     def __init__(self, storage_client=storage.Client()):
         self.storage_client = storage_client
+        self.page_rankings = []
+        self.num_pages_to_show = 0
 
     # Returns the requested page
     def get_wiki_page(self, name):
@@ -29,7 +31,7 @@ class Backend:
 
     # Returns a list of all the page names
     def get_all_page_names(self):
-        '''Fetches all blobs from wikicontent bucket in google clous storage
+        '''Fetches all blobs from wikicontent bucket in google cloud storage
         that contain an html page.
 
         Returns:
@@ -44,7 +46,7 @@ class Backend:
 
     # Returns a list of all the image names
     def get_all_image_names(self):
-        '''Fetches all blobs from wikicontent bucket in google clous storage
+        '''Fetches all blobs from wikicontent bucket in google cloud storage
         that contain an jpg image.
 
         Returns:
@@ -145,3 +147,26 @@ class Backend:
             return None
         else:
             return image
+
+    def load_all_page_rankings(self):
+        '''Fetches all blobs from the pagerankings bucket in google cloud storage
+        and stores them sorted by ranking.
+        '''
+        bucket = self.storage_client.get_bucket('pagerankings')
+        blobs = bucket.list_blobs()
+        self.page_rankings = []
+        self.num_pages_to_show = 5
+        for blob in blobs:
+            with blob.open('r') as f:
+                self.page_rankings.append((blob.name, int(f.read())))
+        self.page_rankings.sort(key=lambda x: x[1])
+        
+
+    def get_page_rankings(self):
+        '''Makes a copy of the first num_pages_to_show rankings.
+
+        Returns:
+            A list of tuples containing the name and the rank of a page.
+        '''
+        self.load_all_page_rankings()
+        return [self.page_rankings[i][0] for i in range(self.num_pages_to_show)]
