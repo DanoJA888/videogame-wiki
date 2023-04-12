@@ -70,12 +70,10 @@ def make_endpoints(app, backend=Backend()):
             Redirects to get_user_page.
         '''
         if 'upvote' in request.form:
-            print('upvote')
+            b.update_vote(page, current_user.username, 1)
         elif 'downvote' in request.form:
-            print('downvote')
-        else:
-            print('error')
-        # return redirect(request.url)
+            b.update_vote(page, current_user.username, -1)
+        return redirect(request.url)
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
@@ -135,7 +133,6 @@ def make_endpoints(app, backend=Backend()):
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
-        
         pages = b.get_page_rankings()
         return render_template("pages.html", pages=pages)
 

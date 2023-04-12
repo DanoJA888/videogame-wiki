@@ -3,6 +3,7 @@
 from google.cloud import storage
 import base64
 import hashlib
+import json
 
 
 class Backend:
@@ -59,11 +60,22 @@ class Backend:
         ]
 
     def upload(self, file_name):
-        bucket = self.storage_client.get_bucket('wikicontent')
+        wiki_content_bucket = self.storage_client.get_bucket('wikicontent')
+        page_voters_bucket = self.storage_client.get_bucket('pagevoters')
+        page_rankings_bucket = self.storage_client.get_bucket('pagerankings')
         if file_name:
-            blob = bucket.blob(file_name)
+            # uploads page
+            blob = wiki_content_bucket.blob(file_name)
             blob.name = file_name.split('/')[-1]
             blob.upload_from_filename(file_name)
+            # allows page voting records to be stored for this page
+            blob = page_voters_bucket.blob(file_name.split('/')[-1])
+            blob.name = file_name.split('/')[-1]
+            blob.upload_from_string(json.dumps({}))
+            # allows page rank to be tracked fpr this page
+            blob = page_rankings_bucket.blob(file_name.split('/')[-1])
+            blob.name = file_name.split('/')[-1]
+            blob.upload_from_string('0')
             return 'File uploaded to blob'
         else:
             return 'Ineligible filename'
@@ -161,7 +173,6 @@ class Backend:
                 self.page_rankings.append((blob.name, int(f.read())))
         self.page_rankings.sort(key=lambda x: x[1])
         
-
     def get_page_rankings(self):
         '''Makes a copy of the first num_pages_to_show rankings.
 
@@ -169,4 +180,21 @@ class Backend:
             A list of tuples containing the name and the rank of a page.
         '''
         self.load_all_page_rankings()
-        return [self.page_rankings[i][0] for i in range(self.num_pages_to_show)]
+        return [self.page_rankings[i][0] for i in range(-1,-self.num_pages_to_show,-1)]
+
+    def update_vote(self, page, user, vote):
+        # update pagevoters
+        bucket = self.storage_client.get_bucket('pagevoters')
+        blob = bucket.get_blob(page)
+        with blob.open('r') as f:
+            page_voters = json.loads(f.read())
+        if user in page_voters and page_voters[user] == vote:
+            return
+        page_voters[user] = vote
+        blob.upload_from_string(json.dumps(page_voters))
+        # update pagerankings        
+        bucket = self.storage_client.get_bucket('pagerankings')
+        blob = bucket.get_blob(page)
+        with blob.open('r') as f:
+            blob.upload_from_string(str(int(f.read()) + vote))
+            
