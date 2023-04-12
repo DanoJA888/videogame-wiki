@@ -172,7 +172,7 @@ class Backend:
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
         self.page_rankings.sort(key=lambda x: x[1])
-        
+
     def get_page_rankings(self):
         '''Makes a copy of the first num_pages_to_show rankings.
 
@@ -180,9 +180,15 @@ class Backend:
             A list of tuples containing the name and the rank of a page.
         '''
         self.load_all_page_rankings()
-        return [self.page_rankings[i][0] for i in range(-1,-self.num_pages_to_show,-1)]
+        return [
+            self.page_rankings[i][0]
+            for i in range(-1, -self.num_pages_to_show, -1)
+        ]
 
     def update_vote(self, page, user, vote):
+        '''Updates the voting records and ranking for a page after a user votes.
+        If a user's vote is the same as their current vote the method will exit.
+        '''
         # update pagevoters
         bucket = self.storage_client.get_bucket('pagevoters')
         blob = bucket.get_blob(page)
@@ -192,9 +198,8 @@ class Backend:
             return
         page_voters[user] = vote
         blob.upload_from_string(json.dumps(page_voters))
-        # update pagerankings        
+        # update pagerankings
         bucket = self.storage_client.get_bucket('pagerankings')
         blob = bucket.get_blob(page)
         with blob.open('r') as f:
             blob.upload_from_string(str(int(f.read()) + vote))
-            
