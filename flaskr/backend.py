@@ -11,7 +11,7 @@ class Backend:
     def __init__(self, storage_client=storage.Client()):
         self.storage_client = storage_client
         self.page_rankings = []
-        self.num_pages_to_show = 0
+        self.num_pages_to_show = 5
 
     # Returns the requested page
     def get_wiki_page(self, name):
@@ -160,29 +160,23 @@ class Backend:
         else:
             return image
 
-    def load_all_page_rankings(self):
+    def get_page_rankings(self):
         '''Fetches all blobs from the pagerankings bucket in google cloud storage
         and stores them sorted by ranking.
+
+            Returns:
+                A list of tuples containing the name and the rank of a page.
         '''
         bucket = self.storage_client.get_bucket('pagerankings')
         blobs = bucket.list_blobs()
         self.page_rankings = []
-        self.num_pages_to_show = 5
         for blob in blobs:
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
         self.page_rankings.sort(key=lambda x: x[1])
-
-    def get_page_rankings(self):
-        '''Makes a copy of the first num_pages_to_show rankings.
-
-        Returns:
-            A list of tuples containing the name and the rank of a page.
-        '''
-        self.load_all_page_rankings()
         return [
             self.page_rankings[i][0]
-            for i in range(-1, -self.num_pages_to_show, -1)
+            for i in range(-1, -self.num_pages_to_show-1, -1)
         ]
 
     def update_vote(self, page, user, vote):

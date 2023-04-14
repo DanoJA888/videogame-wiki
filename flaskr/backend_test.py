@@ -333,3 +333,22 @@ def test_update_vote_new_user(client):
             'user2': 1
         }))
     pagerankings_blob.upload_from_string.assert_called_once_with('6')
+
+@mock.patch("google.cloud.storage.Client")
+def test_get_page_rankings(client):
+    blob1 = MagicMock()
+    blob1.name = 'page1'
+    blob1.open.return_value.__enter__.return_value.read.return_value = '10'
+    blob2 = MagicMock()
+    blob2.name = 'page2'
+    blob2.open.return_value.__enter__.return_value.read.return_value = '5'
+    bucket = MagicMock()
+    bucket.list_blobs.return_value = [blob1, blob2]
+    client = MagicMock()
+    client.get_bucket.return_value = bucket
+    backend = Backend(client)
+    backend.num_pages_to_show = 1
+    page_rankings = backend.get_page_rankings()
+    assert backend.page_rankings == [('page2', 5), ('page1', 10)]
+    assert page_rankings == ['page1']
+    
