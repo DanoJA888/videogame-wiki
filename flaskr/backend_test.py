@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from unittest.mock import Mock
 import hashlib
 import base64
+import json
 
 
 @pytest.fixture
@@ -252,3 +253,83 @@ def test_get_image_success():
     result = b.get_image('imageworks.jpg'.encode('utf-8'))
     assert result == base64.b64encode('imageworks.jpg'.encode('utf-8'))
 '''
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_same_vote(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user', 1)
+    pagevoters_blob.blob.upload_from_string.assert_not_called()
+    pagerankings_blob.upload_from_string.assert_not_called()
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_different_vote(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user', -1)
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({'user': -1}))
+    pagerankings_blob.upload_from_string.assert_called_once_with('4')
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_new_user(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user1': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user2', 1)
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({
+            'user1': 1,
+            'user2': 1
+        }))
+    pagerankings_blob.upload_from_string.assert_called_once_with('6')
