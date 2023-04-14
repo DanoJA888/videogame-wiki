@@ -334,6 +334,7 @@ def test_update_vote_new_user(client):
         }))
     pagerankings_blob.upload_from_string.assert_called_once_with('6')
 
+
 @mock.patch("google.cloud.storage.Client")
 def test_get_page_rankings(client):
     blob1 = MagicMock()
@@ -351,4 +352,3 @@ def test_get_page_rankings(client):
     page_rankings = backend.get_page_rankings()
     assert backend.page_rankings == [('page2', 5), ('page1', 10)]
     assert page_rankings == ['page1']
-    

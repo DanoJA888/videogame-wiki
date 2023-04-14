@@ -176,7 +176,7 @@ class Backend:
         self.page_rankings.sort(key=lambda x: x[1])
         return [
             self.page_rankings[i][0]
-            for i in range(-1, -self.num_pages_to_show-1, -1)
+            for i in range(-1, -self.num_pages_to_show - 1, -1)
         ]
 
     def update_vote(self, page, user, vote):
