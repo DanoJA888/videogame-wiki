@@ -1,0 +1,35 @@
+{% extends "main.html" %}
+
+{% block page_name %}
+Create Page
+{% endblock %}
+
+{% block content %}
+    <h1 style="font-size:40px;">Create Page</h1>   
+    <form action="/create_page" method="post">
+        <input id="filename" name="filename" type="text" placeholder="Filename..." class="textbox"/></br></br>
+        <textarea rows = "48" cols = "200" name = "pagecontent">
+&lt!DOCTYPE html&gt
+&lthtml&gt
+    &lthead&gt
+        &lttitle&gt
+                ENTER TITLE HERE...
+        &lt/title&gt
+    &lt/head&gt
+            
+    &ltbody&gt
+        &lth1&gtENTER TITLE HERE...&lt/h1&gt
+            
+        &ltp&gt
+        ENTER INFO HERE...
+        &lth3&gtSome Popular Examples&lt/h3&gt
+        &ltp&gt
+        ENTER EXAMPLES HERE...
+        &lt/p&gt
+        &ltu1&gtENTER SOURCES HERE...&lt/u1&gt
+    &lt/body&gt
+&lt/html&gt            
+         </textarea>
+        <input type="submit" class="btn" value="Upload to Wiki"></br>
+    </form>
+{% endblock %}

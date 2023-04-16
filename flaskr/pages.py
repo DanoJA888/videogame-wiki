@@ -176,3 +176,17 @@ def make_endpoints(app, backend=Backend()):
         logout_user()
         flash('You have logged out')
         return render_template('logout.html')
+    
+    @app.route("/create_page", methods = ['GET', 'POST'])
+    def create_page():
+        if request.method == 'POST':
+            title = request.form['filename']
+            page = request.form['pagecontent']
+            filename = title + '.html'
+            with open(filename, 'w') as f:
+                f.write(page)
+            b.upload(filename)
+        return render_template('create_page.html')                
+
+
+
