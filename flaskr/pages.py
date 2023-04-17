@@ -178,6 +178,7 @@ def make_endpoints(app, backend=Backend()):
         return render_template('logout.html')
     
     @app.route("/create_page", methods = ['GET', 'POST'])
+    @login_required
     def create_page():
         if request.method == 'POST':
             title = request.form['filename']
@@ -188,5 +189,16 @@ def make_endpoints(app, backend=Backend()):
             b.upload(filename)
         return render_template('create_page.html')                
 
+    @app.route("/edit_page", methods = ['GET', 'POST'])
+    @login_required
+    def edit_page():
+        pages = b.get_all_page_names()
+        if request.method == 'POST':
+            page = request.form['pagecontent']
+            filename = request.form.get('pages_select')
+            with open(filename, 'w') as f:
+                f.write(page)
+            b.upload(filename)
+        return render_template('edit_page.html', pages=pages)
 
 

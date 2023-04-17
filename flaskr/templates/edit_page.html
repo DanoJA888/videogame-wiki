@@ -1,14 +1,14 @@
 {% extends "main.html" %}
 
 {% block page_name %}
-Create Page
+Edit Page
 {% endblock %}
 
 {% block content %}
-    <h1 style="font-size:40px;">Create Page</h1>   
-    <form action="/create_page" method="post">
-        <input id="filename" name="filename" type="text" placeholder="Filename..." class="textbox"/></br></br>
-        <textarea rows = "49" cols = "200" name = "pagecontent">
+    <h1 style="font-size:40px;">Edit Page</h1>   
+    <form action="/edit_page" method="post">
+        
+        <textarea rows = "52" cols = "200" name = "pagecontent">
 &lt!DOCTYPE html&gt
 &lthtml&gt
     &lthead&gt
@@ -30,6 +30,11 @@ Create Page
     &lt/body&gt
 &lt/html&gt            
          </textarea>
+         <select name="pages_select" method="GET" action="/">
+            {% for page in pages %}
+            <option value= "{{page}}" SELECTED>{{page}}</option>"
+            {% endfor %}
+        </select>
         <input type="submit" class="btn" value="Upload to Wiki"></br>
     </form>
 {% endblock %}
