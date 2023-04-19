@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block page_name %}
+Pages
+{% endblock %}
+
+{% block content %}
+    <h1 style="font-size:40px;"><center>{{username}}'s Pages</center></h1>   
+    <p style="margin-left: 25px; font-size:30px;">
+    {% for page in pages %}
+    <b></b>
+    <a href="/pages/{{ page }}"><center>{{page}}</center><br/></a>
+    {% endfor %}
+    </p>
+{% endblock %}

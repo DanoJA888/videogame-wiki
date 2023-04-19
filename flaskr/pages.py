@@ -8,16 +8,17 @@ import os
 
 class User(UserMixin):
 
-    def __init__(self, username, client, bucket):
+    def __init__(self, username, client, bucket, pages=[]):
         self.id = username
         self.username = username
         self.client = client
         self.bucket = bucket
         self.blob = self.bucket.get_blob(username + '.txt')
+        self.pages = pages
 
     def get(self, username):
         if self.blob:
-            return User(self.id, self.client, self.bucket)
+            return User(self.id, self.client, self.bucket, self.pages)
         return None
 
 
@@ -180,25 +181,55 @@ def make_endpoints(app, backend=Backend()):
     @app.route("/create_page", methods = ['GET', 'POST'])
     @login_required
     def create_page():
+        '''Creates an html file from form content and uploads it to bucket.
+        
+        Returns:
+            A render of the create_page file w/ form content.
+        '''
+        user = current_user
+        user_pages = user.pages
         if request.method == 'POST':
             title = request.form['filename']
             page = request.form['pagecontent']
             filename = title + '.html'
-            with open(filename, 'w') as f:
-                f.write(page)
-            b.upload(filename)
+            if filename in b.get_all_page_names():
+                flash('File already exists! Please try another name.')
+            else:
+                with open(filename, 'w') as f:
+                    f.write(page)
+                b.upload(filename)
+                user_pages.append(filename)
         return render_template('create_page.html')                
 
     @app.route("/edit_page", methods = ['GET', 'POST'])
     @login_required
     def edit_page():
-        pages = b.get_all_page_names()
+        '''Creates an html file from form content and uploads it to bucket (replaces existing file w/ same name).
+        
+        Returns:
+            A render of the edit_page file w/ form content.
+        '''
+        user = current_user
+        user_pages = user.pages
         if request.method == 'POST':
             page = request.form['pagecontent']
             filename = request.form.get('pages_select')
             with open(filename, 'w') as f:
                 f.write(page)
             b.upload(filename)
-        return render_template('edit_page.html', pages=pages)
+        return render_template('edit_page.html', pages=user_pages)
+
+    @app.route("/your_pages", methods = ['GET', 'POST'])
+    @login_required
+    def your_pages():
+        '''Passes a list of user-created pages from current_user into your_pages.html
+        
+        Returns:
+            A render of the your_pages file w/ username and pages list content.
+        '''
+        user = current_user
+        username = user.username
+        user_pages = user.pages
+        return render_template('your_pages.html', username=username, pages=user_pages)
 
 
