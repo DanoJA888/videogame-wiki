@@ -47,6 +47,7 @@ def integration_get_all_pages(mock_get_all_page_names, client):
 '''
 
 
+    
 @mock.patch("flaskr.backend.Backend.sign_up",
             return_value="User data successfully created")
 def integration_signup_success(mock_sign_up, client):
@@ -94,6 +95,32 @@ def integration_upload_login_required(client):
             AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
 '''
 
+def integration_create_page_login_required(client):
+    '''Mocks @login_required for create_page() from flaskr.pages.
+        
+        Raises:
+            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
+    '''    
+    resp = client.get("/create_page")
+    assert resp.status_code == 401
+
+def integration_edit_page_login_required(client):
+    '''Mocks @login_required for edit_page() from flaskr.pages.
+        
+        Raises:
+            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
+    '''    
+    resp = client.get("/edit_page")
+    assert resp.status_code == 401
+
+def integration_your_pages_login_required(client):
+    '''Mocks @login_required for your_pages() from flaskr.pages.
+        
+        Raises:
+            AssertionError: Status code is unexpected while LOGIN_DISABLED = False.
+    '''    
+    resp = client.get("/your_pages")
+    assert resp.status_code == 401
 
 def integration_logout_login_required(client):
     resp = client.get("/logout")
@@ -113,6 +140,32 @@ def integration_get_user_page_route(client):
     assert resp.status_code == 200
     assert b'FIFA' in resp.data
 
+def integration_create_page_route_logged_in(client):
+    resp = client.get('/create_page')
+    assert resp.status_code == 200
+    assert b'Create Page' in resp.data
+
+def integration_create_page_route_logged_out(client):
+    resp = client.get('/create_page')
+    assert resp.status_code == 401
+
+def integration_edit_page_route_logged_in(client):
+    resp = client.get('/edit_page')
+    assert resp.status_code == 200
+    assert b'Edit Page' in resp.data
+
+def integration_edit_page_route_logged_out(client):
+    resp = client.get('/edit_page')
+    assert resp.status_code == 401
+
+def integration_your_pages_route_logged_in(client):
+    resp = client.get('/your_pages')
+    assert resp.status_code == 200
+    assert b"'s Pages" in resp.data
+
+def integration_your_pages_route_logged_out(client):
+    resp = client.get('/your_pages')
+    assert resp.status_code == 401
 
 def integration_upload_route_GET_logged_out(client):
     resp = client.get('/upload')
