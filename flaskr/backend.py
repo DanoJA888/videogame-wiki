@@ -145,3 +145,38 @@ class Backend:
             return None
         else:
             return image
+    
+    def get_all_user_pages(self, user):
+        bucket = self.storage_client.bucket('user_pages')
+        blobs = bucket.list_blobs()
+        pages = []
+        if user:
+            for blob in blobs:
+                if blob.name == user + ".txt":
+                    with blob.open(mode='r') as file:
+                        for line in file:
+                            pages.append(line)
+        return pages
+        
+        
+    def add_user_page(self, user, filename):
+        bucket = self.storage_client.get_bucket('user_pages')
+        blobs = bucket.list_blobs()
+
+        if user and filename:
+            for blob in blobs:
+                if blob.name == user + ".txt":
+                    with blob.open(mode='r+') as file:
+                        for line in file:
+                            if line == filename:
+                                return 'Page already added!'        
+                        file.write(filename)
+                        return 'Page added'                                    
+            blob = bucket.blob(user + '.txt')
+            with blob.open(mode='w') as file:
+                file.write(filename)
+                return "File for user's pages successfully created"
+
+                
+
+    

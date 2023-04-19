@@ -8,17 +8,17 @@ import os
 
 class User(UserMixin):
 
-    def __init__(self, username, client, bucket, pages=[]):
+    def __init__(self, username, client, bucket):
         self.id = username
         self.username = username
         self.client = client
         self.bucket = bucket
         self.blob = self.bucket.get_blob(username + '.txt')
-        self.pages = pages
+        
 
     def get(self, username):
         if self.blob:
-            return User(self.id, self.client, self.bucket, self.pages)
+            return User(self.id, self.client, self.bucket)
         return None
 
 
@@ -186,8 +186,6 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             A render of the create_page file w/ form content.
         '''
-        user = current_user
-        user_pages = user.pages
         if request.method == 'POST':
             title = request.form['filename']
             page = request.form['pagecontent']
@@ -198,7 +196,7 @@ def make_endpoints(app, backend=Backend()):
                 with open(filename, 'w') as f:
                     f.write(page)
                 b.upload(filename)
-                user_pages.append(filename)
+                b.add_user_page(current_user.username, filename)
         return render_template('create_page.html')                
 
     @app.route("/edit_page", methods = ['GET', 'POST'])
@@ -209,8 +207,7 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             A render of the edit_page file w/ form content.
         '''
-        user = current_user
-        user_pages = user.pages
+        user_pages = b.get_all_user_pages(current_user.username)
         if request.method == 'POST':
             page = request.form['pagecontent']
             filename = request.form.get('pages_select')
@@ -227,9 +224,7 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             A render of the your_pages file w/ username and pages list content.
         '''
-        user = current_user
-        username = user.username
-        user_pages = user.pages
-        return render_template('your_pages.html', username=username, pages=user_pages)
+        user_pages = b.get_all_user_pages(current_user.username)
+        return render_template('your_pages.html', username=current_user.username, pages=user_pages)
 
 

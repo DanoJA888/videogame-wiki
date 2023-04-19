@@ -156,6 +156,16 @@ def test_sign_up_fail_pw(mock_client):
                 AssertionError: Return value is unexpected.
 '''
 
+@mock.patch("google.cloud.storage.Client")
+def test_add_user_pages(mock_client):
+    user = 'user'
+    filename = 'filename.html'
+    mock_client = mock.MagicMock()
+    mock_backend = Backend(mock_client)
+    mock_bucket = mock_client.get_bucket
+    mock_blob = mock_bucket.get_blob("test_user.txt").return_value
+    assert mock_backend.add_user_page(user, filename) == 'Page added!'
+
 # TODO(Project 1): Write tests for Backend methods.
 
 
