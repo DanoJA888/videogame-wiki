@@ -42,7 +42,7 @@ def make_endpoints(app, backend=Backend()):
         return render_template('main.html')
 
     # not sure why but if i take the comma off the function params it doesnt work but if i keep it it works...
-    @app.route("/pages/<page>", methods=['GET', 'POST'])
+    @app.route("/pages/<page>", methods=['GET'])
     def get_user_page(page):
         '''Fetches page from backend.
 
@@ -57,21 +57,24 @@ def make_endpoints(app, backend=Backend()):
         # without reloading
         file_name, file_content = b.get_wiki_page(page)
         comments = b.get_section(page)
-        if request.method == 'POST':
-            un = current_user.username
-            comment = request.form['comment']
-            b.make_comment(page, un, comment)
-            comments = b.get_section(page)
-            flash('Comment Posted!')
-            return render_template('user.html',
-                                   page_name=f'{file_name.split(".")[0]}',
-                                   content=Markup(file_content),
-                                   comments=comments)
+        
 
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
                                content=Markup(file_content),
                                comments=comments)
+
+    @app.route("/pages/<page>", methods=['POST'])
+    @login_required
+    def update_page(page):
+        if 'comment' not in request:
+            flash('not sure what you meant._.')
+            return redirect(request.url)
+        un = current_user.username
+        comment = request.form['comment']
+        b.make_comment(page, un, comment)
+        flash('Comment Posted!')
+        return redirect(request.url)
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 

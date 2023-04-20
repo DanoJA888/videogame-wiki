@@ -157,16 +157,16 @@ class Backend:
 
     def make_comment(self, page_name, username, comment):
         bucket = self.storage_client.get_bucket('commentsection')
-        if comment != '':
-            cs_name = page_name.split('.')[0] + '.json'
-            blob = bucket.get_blob(cs_name)
-            comment_as_json = blob.download_as_text()
-            comment_section = json.loads(comment_as_json)
-            comment_section.append((username, comment))
-            updated_cs = json.dumps(comment_section)
-            blob.upload_from_string(updated_cs, content_type='application/json')
-            return comment_section
-        return []
+        if comment == '':
+            return []
+        cs_name = page_name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        comment_as_json = blob.download_as_text()
+        comment_section = json.loads(comment_as_json)
+        comment_section.append((username, comment))
+        updated_cs = json.dumps(comment_section)
+        blob.upload_from_string(updated_cs, content_type='application/json')
+        return comment_section
 
     '''
     function that pulls the comment section of the respective page. Again, since I am using lists and cant store directly
@@ -192,14 +192,11 @@ class Backend:
     '''
 
     def create_comment_section(self, name=None):
-        if name:
-            bucket = self.storage_client.get_bucket('commentsection')
-            comment_section = []
-            json_lst = json.dumps(comment_section)
-            name_with_html = name.split('/')[-1]
-            page_name = name_with_html.split('.')[0] + '.json'
-            blob = bucket.blob(page_name)
-            blob.upload_from_string(json_lst, content_type='application/json')
-            return 'Comment Section Created'
-        else:
+        if not name:
             return 'Could Not Create Comment Section'
+        bucket = self.storage_client.get_bucket('commentsection')
+        name_with_html = name.split('/')[-1]
+        page_name = name_with_html.split('.')[0] + '.json'
+        blob = bucket.blob(page_name)
+        blob.upload_from_string('[]', content_type='application/json')
+        return 'Comment Section Created'         

@@ -3,12 +3,15 @@
         <h3>
             Add a comment
         </h3>
-        <form method="POST">
+        <form action = "/pages/{{page_name}}.html" method="POST" >
             <textarea name="comment" style="resize: None;" rows="5" cols="100"></textarea>
             <br>
             <input type="submit" value="Post">
         </form>
+        <p>{{page_name}}</p>
+    
     {% else %}
         <p style = 'font-weight: bold;'>Want to voice your opinion? Create an Account or Sign in</p>
     {% endif %}
+    
 </div>
