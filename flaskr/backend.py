@@ -199,4 +199,4 @@ class Backend:
         page_name = name_with_html.split('.')[0] + '.json'
         blob = bucket.blob(page_name)
         blob.upload_from_string('[]', content_type='application/json')
-        return 'Comment Section Created'         
+        return 'Comment Section Created'

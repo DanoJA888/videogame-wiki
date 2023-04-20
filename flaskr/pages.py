@@ -57,7 +57,6 @@ def make_endpoints(app, backend=Backend()):
         # without reloading
         file_name, file_content = b.get_wiki_page(page)
         comments = b.get_section(page)
-        
 
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
