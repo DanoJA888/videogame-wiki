@@ -66,9 +66,7 @@ def make_endpoints(app, backend=Backend()):
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
     def update_page(page):
-        if 'comment' not in request:
-            flash('not sure what you meant._.')
-            return redirect(request.url)
+
         un = current_user.username
         comment = request.form['comment']
         b.make_comment(page, un, comment)
