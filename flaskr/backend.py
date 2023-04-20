@@ -12,6 +12,8 @@ class Backend:
         self.storage_client = storage_client
         self.page_rankings = []
         self.num_pages_to_show = 5
+        self.total_pages = 0
+        self.pages_counted = False
 
     # Returns the requested page
     def get_wiki_page(self, name):
@@ -171,8 +173,11 @@ class Backend:
         blobs = bucket.list_blobs()
         self.page_rankings = []
         for blob in blobs:
+            if not self.pages_counted:
+                self.total_pages += 1
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
+        self.pages_counted = True
         self.page_rankings.sort(key=lambda x: x[1])
         return [
             self.page_rankings[i][0]
@@ -197,6 +202,7 @@ class Backend:
         blob = bucket.get_blob(page)
         with blob.open('r') as f:
             blob.upload_from_string(str(int(f.read()) + vote))
+
     '''
     Function that adds a new comment to the comment section.
     I retireve the list from the bucket, since it can only store files i made the list a json string when storing,
@@ -250,3 +256,19 @@ class Backend:
         blob = bucket.blob(page_name)
         blob.upload_from_string('[]', content_type='application/json')
         return 'Comment Section Created'
+
+    '''
+    function that loads more pages, edge case for when there are no more pages to load, for when you click to load more but
+    there are less pages left to load than the amount added every time, and for when there is more pages after loading left
+    '''
+
+    def load_more_pages(self):
+        if self.num_pages_to_show == self.total_pages:
+            return 'No more pages to load'
+        elif self.num_pages_to_show + 5 > self.total_pages:
+            self.num_pages_to_show += (self.total_pages -
+                                       self.num_pages_to_show)
+            return 'loading final pages'
+        else:
+            self.num_pages_to_show += 5
+            return 'loading more pages'

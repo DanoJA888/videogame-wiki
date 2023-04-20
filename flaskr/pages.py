@@ -62,6 +62,7 @@ def make_endpoints(app, backend=Backend()):
                                page_name=f'{file_name.split(".")[0]}',
                                content=Markup(file_content),
                                comments=comments)
+
     '''
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
@@ -152,13 +153,20 @@ def make_endpoints(app, backend=Backend()):
             return redirect(request.url)
         return render_template('upload.html')
 
-    @app.route("/pages/")
+    @app.route("/pages/", methods=['GET', 'POST'])
     def get_all_pages():
         '''Passes a list of all blobs from wikicontent into pages.html.
         
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
+        '''
+        added a post so that the user can ask for more pages to get loaded
+        '''
+        if request.method == 'POST':
+            b.load_more_pages()
+            pages = b.get_page_rankings()
+            return render_template('pages.html', pages=pages)
         pages = b.get_page_rankings()
         return render_template("pages.html", pages=pages)
 
