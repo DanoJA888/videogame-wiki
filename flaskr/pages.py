@@ -41,6 +41,7 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
+    # not sure why but if i take the comma off the function params it doesnt work but if i keep it it works...
     @app.route("/pages/<page>", methods=['GET'])
     def get_user_page(page):
         '''Fetches page from backend.
@@ -52,10 +53,28 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
+        # added a post request to actually update the comment section, still unsure how to make it so that it posts
+        # without reloading
         file_name, file_content = b.get_wiki_page(page)
+        comments = b.get_section(page)
+
         return render_template('user.html',
                                page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content))
+                               content=Markup(file_content),
+                               comments=comments)
+    '''
+    @app.route("/pages/<page>", methods=['POST'])
+    @login_required
+    def update_page(page):
+        if 'comment' not in request:
+            flash('not sure what you meant._.')
+            return redirect(request.url)
+        un = current_user.username
+        comment = request.form['comment']
+        b.make_comment(page, un, comment)
+        flash('Comment Posted!')
+        return redirect(request.url)
+    '''
 
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
@@ -73,6 +92,11 @@ def make_endpoints(app, backend=Backend()):
             b.update_vote(page, current_user.username, 1)
         elif 'downvote' in request.form:
             b.update_vote(page, current_user.username, -1)
+        elif 'comment' in request.form:
+            un = current_user.username
+            comment = request.form['comment']
+            b.make_comment(page, un, comment)
+            flash('Comment Posted!')
         return redirect(request.url)
 
     '''
@@ -117,6 +141,8 @@ def make_endpoints(app, backend=Backend()):
                     'flaskr/uploads/', request.form['wikiname'], '.',
                     file_extension
                 ])
+                if file_extension == 'html':
+                    b.create_comment_section(filename)
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
