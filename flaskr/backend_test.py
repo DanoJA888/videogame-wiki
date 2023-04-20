@@ -281,7 +281,7 @@ def test_update_vote_same_vote(client):
 
 
 @mock.patch("google.cloud.storage.Client")
-def test_update_vote_different_vote(client):
+def test_update_vote_duplicate_vote(client):
     # pagevoters
     pagevoters_blob = MagicMock()
     pagevoters_bucket = MagicMock()
@@ -320,6 +320,7 @@ def test_update_vote_new_user(client):
     pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
     pagerankings_bucket.get_blob.return_value = pagerankings_blob
 
+    # allows get_bucket to return a certain bucket depending on the input
     def get_bucket_side_effect(bucket_name):
         return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
 
@@ -339,10 +340,10 @@ def test_update_vote_new_user(client):
 def test_get_page_rankings(client):
     blob1 = MagicMock()
     blob1.name = 'page1'
-    blob1.open.return_value.__enter__.return_value.read.return_value = '10'
+    blob1.open.return_value.__enter__.return_value.read.return_value = '5'
     blob2 = MagicMock()
     blob2.name = 'page2'
-    blob2.open.return_value.__enter__.return_value.read.return_value = '5'
+    blob2.open.return_value.__enter__.return_value.read.return_value = '10'
     bucket = MagicMock()
     bucket.list_blobs.return_value = [blob1, blob2]
     client = MagicMock()
@@ -350,5 +351,5 @@ def test_get_page_rankings(client):
     backend = Backend(client)
     backend.num_pages_to_show = 1
     page_rankings = backend.get_page_rankings()
-    assert backend.page_rankings == [('page2', 5), ('page1', 10)]
-    assert page_rankings == ['page1']
+    assert backend.page_rankings == [('page2', 10), ('page1', 5)]
+    assert page_rankings == ['page2']

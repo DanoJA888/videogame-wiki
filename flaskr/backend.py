@@ -63,22 +63,22 @@ class Backend:
         wiki_content_bucket = self.storage_client.get_bucket('wikicontent')
         page_voters_bucket = self.storage_client.get_bucket('pagevoters')
         page_rankings_bucket = self.storage_client.get_bucket('pagerankings')
-        if file_name:
-            # uploads page
-            blob = wiki_content_bucket.blob(file_name)
-            blob.name = file_name.split('/')[-1]
-            blob.upload_from_filename(file_name)
-            # allows page voting records to be stored for this page
-            blob = page_voters_bucket.blob(file_name.split('/')[-1])
-            blob.name = file_name.split('/')[-1]
-            blob.upload_from_string(json.dumps({}))
-            # allows page rank to be tracked fpr this page
-            blob = page_rankings_bucket.blob(file_name.split('/')[-1])
-            blob.name = file_name.split('/')[-1]
-            blob.upload_from_string('0')
-            return 'File uploaded to blob'
-        else:
+        if not file_name:
             return 'Ineligible filename'
+        page_name = file_name.split('/')[-1]
+        # uploads page
+        wiki_content_blob = wiki_content_bucket.blob(page_name)
+        wiki_content_blob.name = page_name
+        wiki_content_blob.upload_from_filename(file_name)
+        # allows page voting records to be stored for this page
+        page_voters_blob = page_voters_bucket.blob(page_name)
+        page_voters_blob.name = page_name
+        page_voters_blob.upload_from_string(json.dumps({}))
+        # allows page rank to be tracked for this page
+        page_rankings_blob = page_rankings_bucket.blob(page_name)
+        page_rankings_blob.name = page_name
+        page_rankings_blob.upload_from_string('0')
+        return 'File uploaded to blob'
 
     '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
         
@@ -165,19 +165,19 @@ class Backend:
         and stores them sorted by ranking.
 
             Returns:
-                A list of tuples containing the name and the rank of a page.
+                A list containing the names of the pages.
         '''
         bucket = self.storage_client.get_bucket('pagerankings')
         blobs = bucket.list_blobs()
         self.page_rankings = []
+        # pulls ranking information from gcs and stores it as a list of tuples (pagename, voting_ratio)
         for blob in blobs:
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
-        self.page_rankings.sort(key=lambda x: x[1])
-        return [
-            self.page_rankings[i][0]
-            for i in range(-1, -self.num_pages_to_show - 1, -1)
-        ]
+        # sorts page_rankings by voting ratio
+        self.page_rankings.sort(key=lambda x: x[1], reverse=True)
+        # returns only the names of the pages
+        return [self.page_rankings[i][0] for i in range(self.num_pages_to_show)]
 
     def update_vote(self, page, user, vote):
         '''Updates the voting records and ranking for a page after a user votes.
@@ -188,7 +188,8 @@ class Backend:
         blob = bucket.get_blob(page)
         with blob.open('r') as f:
             page_voters = json.loads(f.read())
-        if user in page_voters and page_voters[user] == vote:
+        duplicate_vote = user in page_voters and page_voters[user] == vote
+        if duplicate_vote:
             return
         page_voters[user] = vote
         blob.upload_from_string(json.dumps(page_voters))
