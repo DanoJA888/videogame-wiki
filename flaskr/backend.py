@@ -3,6 +3,7 @@
 from google.cloud import storage
 import base64
 import hashlib
+import tempfile
 
 
 class Backend:
@@ -163,19 +164,27 @@ class Backend:
         bucket = self.storage_client.get_bucket('user_pages')
         blobs = bucket.list_blobs()
 
+        user_pages = None
         if user and filename:
             for blob in blobs:
                 if blob.name == user + ".txt":
-                    with blob.open(mode='r+') as file:
-                        for line in file:
-                            if line == filename:
-                                return 'Page already added!'        
-                        file.write(filename)
-                        return 'Page added'                                    
+                    blob_contents = blob.download_as_text()
+                    user_pages = blob_contents.split('\n')
+                    if filename in user_pages:
+                        return 'Page already added'
+                    else:
+                        temp = tempfile.TemporaryFile(mode = 'w+t')
+                        for page in user_pages:
+                            if page != '':
+                                temp.write(page + '\n')
+                        temp.write(filename + '\n')
+                        temp.seek(0)
+                        blob.upload_from_file(temp)
+                        return 'Page added!'
             blob = bucket.blob(user + '.txt')
-            with blob.open(mode='w') as file:
-                file.write(filename)
-                return "File for user's pages successfully created"
+            with blob.open(mode='w') as f:
+                f.write(filename + '\n')
+            return 'User pages successfully created!'             
 
                 
 
