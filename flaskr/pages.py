@@ -55,22 +55,41 @@ def make_endpoints(app, backend=Backend()):
         '''
         # added a post request to actually update the comment section, still unsure how to make it so that it posts
         # without reloading
-        file_name, file_content = b.get_wiki_page(page)
         comments = b.get_section(page)
-
+        page_name, page_content, page_voting_ratio, current_user_vote = b.get_wiki_page(
+            page,
+            current_user.username if current_user.is_authenticated else None)
+        downvote_color = 'orange' if current_user_vote == -1 else 'grey'
+        upvote_color = 'orange' if current_user_vote == 1 else 'grey'
         return render_template('user.html',
-                               page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content),
+                               page_name=f'{page_name.split(".")[0]}',
+                               content=Markup(page_content),
+                               voting_ratio=page_voting_ratio,
+                               downvote_color=downvote_color,
+                               upvote_color=upvote_color,
                                comments=comments)
 
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
-    def update_page(page):
+    def post_user_page(page):
+        '''Fetches page from backend.
 
-        un = current_user.username
-        comment = request.form['comment']
-        b.make_comment(page, un, comment)
-        flash('Comment Posted!')
+        Args:
+            page:
+                The name of the page where the vote occurred.
+
+        Returns:
+            Redirects to get_user_page.
+        '''
+        if 'upvote' in request.form:
+            b.update_vote(page, current_user.username, 1)
+        elif 'downvote' in request.form:
+            b.update_vote(page, current_user.username, -1)
+        elif 'comment' in request.form:
+            un = current_user.username
+            comment = request.form['comment']
+            b.make_comment(page, un, comment)
+            flash('Comment Posted!')
         return redirect(request.url)
 
     '''
@@ -126,15 +145,14 @@ def make_endpoints(app, backend=Backend()):
             return redirect(request.url)
         return render_template('upload.html')
 
-    @app.route("/pages/")
+    @app.route("/pages/", methods=['GET'])
     def get_all_pages():
         '''Passes a list of all blobs from wikicontent into pages.html.
         
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
-
-        pages = b.get_all_page_names()
+        pages = b.get_page_rankings()
         return render_template("pages.html", pages=pages)
 
     @app.route("/signup", methods=['GET', 'POST'])
@@ -188,7 +206,7 @@ def make_endpoints(app, backend=Backend()):
 
     '''logged out the user and flashed the message'''
 
-    @app.route("/logout")
+    @app.route("/logout", methods=['GET'])
     @login_required
     def logout():
         logout_user()
