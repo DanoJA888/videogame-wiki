@@ -41,6 +41,7 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
+    # not sure why but if i take the comma off the function params it doesnt work but if i keep it it works...
     @app.route("/pages/<page>", methods=['GET'])
     def get_user_page(page):
         '''Fetches page from backend.
@@ -52,6 +53,9 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
+        # added a post request to actually update the comment section, still unsure how to make it so that it posts
+        # without reloading
+        comments = b.get_section(page)
         page_name, page_content, page_voting_ratio, current_user_vote = b.get_wiki_page(
             page,
             current_user.username if current_user.is_authenticated else None)
@@ -62,7 +66,8 @@ def make_endpoints(app, backend=Backend()):
                                content=Markup(page_content),
                                voting_ratio=page_voting_ratio,
                                downvote_color=downvote_color,
-                               upvote_color=upvote_color)
+                               upvote_color=upvote_color,
+                               comments=comments)
 
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
@@ -80,6 +85,11 @@ def make_endpoints(app, backend=Backend()):
             b.update_vote(page, current_user.username, 1)
         elif 'downvote' in request.form:
             b.update_vote(page, current_user.username, -1)
+        elif 'comment' in request.form:
+            un = current_user.username
+            comment = request.form['comment']
+            b.make_comment(page, un, comment)
+            flash('Comment Posted!')
         return redirect(request.url)
 
     '''
@@ -124,6 +134,8 @@ def make_endpoints(app, backend=Backend()):
                     'flaskr/uploads/', request.form['wikiname'], '.',
                     file_extension
                 ])
+                if file_extension == 'html':
+                    b.create_comment_section(filename)
                 file.save(os.path.join(filename))
                 b.upload(filename)
                 os.remove(filename)
@@ -133,13 +145,20 @@ def make_endpoints(app, backend=Backend()):
             return redirect(request.url)
         return render_template('upload.html')
 
-    @app.route("/pages/")
+    @app.route("/pages/", methods=['GET', 'POST'])
     def get_all_pages():
         '''Passes a list of all blobs from wikicontent into pages.html.
         
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
+        '''
+        added a post so that the user can ask for more pages to get loaded
+        '''
+        if request.method == 'POST':
+            b.load_more_pages()
+            pages = b.get_page_rankings()
+            return render_template('pages.html', pages=pages)
         pages = b.get_page_rankings()
         return render_template("pages.html", pages=pages)
 
@@ -194,7 +213,7 @@ def make_endpoints(app, backend=Backend()):
 
     '''logged out the user and flashed the message'''
 
-    @app.route("/logout")
+    @app.route("/logout", methods=['GET'])
     @login_required
     def logout():
         logout_user()

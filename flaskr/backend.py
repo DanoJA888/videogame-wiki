@@ -12,6 +12,8 @@ class Backend:
         self.storage_client = storage_client
         self.page_rankings = []
         self.num_pages_to_show = 5
+        self.total_pages = 0
+        self.pages_counted = False
 
     # Returns the requested page
     def get_wiki_page(self, name, user):
@@ -173,6 +175,60 @@ class Backend:
         else:
             return image
 
+    '''
+    Function that adds a new comment to the comment section.
+    I retireve the list from the bucket, since it can only store files i made the list a json string when storing,
+    so i convert the string into a python list, append the new comment, convert it back to a json string and upload to bucket
+    Return values: for unit tests: if it is successful, return list with new comment, else return empty list
+    
+    '''
+
+    def make_comment(self, page_name, username, comment):
+        bucket = self.storage_client.get_bucket('commentsection')
+        if comment == '':
+            return []
+        cs_name = page_name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        comment_as_json = blob.download_as_text()
+        comment_section = json.loads(comment_as_json)
+        comment_section.append((username, comment))
+        updated_cs = json.dumps(comment_section)
+        blob.upload_from_string(updated_cs, content_type='application/json')
+        return comment_section
+
+    '''
+    function that pulls the comment section of the respective page. Again, since I am using lists and cant store directly
+    i am getting the json string and converting it back to a list and returning that. if it exists ill be returning a python list
+    with the comments, else im not returning anything other than a fail message
+    '''
+
+    def get_section(self, name):
+        bucket = self.storage_client.get_bucket('commentsection')
+        cs_name = name.split('.')[0] + '.json'
+        blob = bucket.get_blob(cs_name)
+        if not blob:
+            return 'Comment Section Not Found'
+        comments_as_json = blob.download_as_text()
+        comments = json.loads(comments_as_json)
+        return comments
+
+    '''
+    function that creates a new comment section. Since buckets can't store python lists directly, converted the lists 
+    into json strings and stored that in the bucket instead. In theory, if th eusers upload the pages, i should create a cs
+    whenever a valid file is uploaded
+    In pages.py, in the upload() function notice the if statement checking if the file is of html type
+    '''
+
+    def create_comment_section(self, name=None):
+        if not name:
+            return 'Could Not Create Comment Section'
+        bucket = self.storage_client.get_bucket('commentsection')
+        name_with_html = name.split('/')[-1]
+        page_name = name_with_html.split('.')[0] + '.json'
+        blob = bucket.blob(page_name)
+        blob.upload_from_string('[]', content_type='application/json')
+        return 'Comment Section Created'
+
     def get_page_rankings(self):
         '''Fetches all blobs from the pagerankings bucket in google cloud storage
         and stores them sorted by ranking.
@@ -185,8 +241,11 @@ class Backend:
         self.page_rankings = []
         # pulls ranking information from gcs and stores it as a list of tuples (pagename, voting_ratio)
         for blob in blobs:
+            if not self.pages_counted:
+                self.total_pages += 1
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
+        self.pages_counted = True
         # sorts page_rankings by voting ratio
         self.page_rankings.sort(key=lambda x: x[1], reverse=True)
         # returns only the names of the pages
@@ -216,3 +275,19 @@ class Backend:
             new_vote = 0
         page_voters[user] = new_vote
         pagevoters_blob.upload_from_string(json.dumps(page_voters))
+
+    '''
+    function that loads more pages, edge case for when there are no more pages to load, for when you click to load more but
+    there are less pages left to load than the amount added every time, and for when there is more pages after loading left
+    '''
+
+    def load_more_pages(self):
+        if self.num_pages_to_show == self.total_pages:
+            return 'No more pages to load'
+        elif self.num_pages_to_show + 5 > self.total_pages:
+            self.num_pages_to_show += (self.total_pages -
+                                       self.num_pages_to_show)
+            return 'loading final pages'
+        else:
+            self.num_pages_to_show += 5
+            return 'loading more pages'

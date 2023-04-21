@@ -350,6 +350,97 @@ def test_sign_in_fails_bc_of_password():
     assert result == [True, False]
 
 
+# unit test that checks the success of a valid comment
+def test_make_comment_success():
+    username = 'daniel'
+    page_name = 'whatever.json'
+    comment = 'this is a test'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.make_comment(page_name, username, comment)
+    assert result == [('daniel', 'this is a test')]
+
+
+# unit test that checks the failure of an invalid comment
+def test_make_comment_fails():
+    username = 'this should pass and print empty list'
+    page_name = 'whatever.json'
+    comment = ''
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.make_comment(page_name, username, comment)
+    assert result == []
+
+
+#unit tests that checks the success of an existing comment section being returned
+def test_get_comments_success():
+    name = 'whatever.json'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = mock_blob
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == []
+
+
+#unit test that checks the correct message is sent if a comment doesnt exist
+def test_get_comments_fail():
+    name = 'unvalid'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.get_blob.return_value = None
+    mock_blob.download_as_text.return_value = '[]'
+
+    b = Backend(mock_client)
+    result = b.get_section(name)
+    assert result == 'Comment Section Not Found'
+
+
+# unit test that checks for correct message if the comment section is correctly created with a valid name
+def test_create_comment_section_success():
+    name = 'flaskr/uploads/whatever.html'
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section(name)
+    assert result == 'Comment Section Created'
+
+
+# unit test that checks for correct message if the comment section is incorrectly created without a valid name
+def test_create_comment_section_fail():
+    mock_client = MagicMock()
+    mock_bucket = MagicMock()
+    mock_blob = MagicMock()
+    mock_client.get_bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    b = Backend(mock_client)
+    result = b.create_comment_section()
+    assert result == 'Could Not Create Comment Section'
+
+
 # tried mocking in smiliar fashion, could not figure out how to pass a jpg!, sadly i think if i had the approriate file passed,
 # the test would have worked, but couldnt get it and focused on other tests
 '''
@@ -470,3 +561,39 @@ def test_get_page_rankings(client):
     page_rankings = backend.get_page_rankings()
     assert backend.page_rankings == [('page2', 10), ('page1', 5)]
     assert page_rankings == ['page2']
+
+
+# unit tests when there are more pages to load after loading new batch of pages
+def test_load_pages_when_there_are_more_pages():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 5
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'loading more pages'
+
+
+# unit tests when there are less pages to load than the default amount (testing for out of bounds)
+def test_load_pages_when_there_are_less_pages_than_default():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 10
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'loading final pages'
+
+
+# unti test when there are no more pages to load (i loaded all the pages)
+def test_load_pages_when_no_more_to_load():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 11
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'No more pages to load'
