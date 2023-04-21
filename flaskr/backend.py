@@ -207,7 +207,10 @@ class Backend:
         # update pagerankings
         pagerankings_blob = pagerankings_bucket.get_blob(page)
         with pagerankings_blob.open('r') as f:
-            pagerankings_blob.upload_from_string(str(int(f.read()) - current_vote + (0 if duplicate_vote else new_vote)))
+            pagerankings_blob.upload_from_string(
+                str(
+                    int(f.read()) - current_vote +
+                    (0 if duplicate_vote else new_vote)))
         # update pagevoters
         if duplicate_vote:
             new_vote = 0
