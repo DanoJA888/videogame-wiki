@@ -3,15 +3,18 @@
 from google.cloud import storage
 import base64
 import hashlib
+import json
 
 
 class Backend:
 
     def __init__(self, storage_client=storage.Client()):
         self.storage_client = storage_client
+        self.page_rankings = []
+        self.num_pages_to_show = 5
 
     # Returns the requested page
-    def get_wiki_page(self, name):
+    def get_wiki_page(self, name, user):
         '''Fetches blob from wikicontent bucket in google clous storage
 
         Args:
@@ -19,17 +22,30 @@ class Backend:
                 The name of the blob to be fetched.
 
         Returns:
-            The name of the blob and its contents as a string.
+            The name of the blob, its contents as a string, and its voting ratio.
         '''
-        bucket = self.storage_client.bucket('wikicontent')
-        if not (blob := bucket.get_blob(name)):
+        wiki_content_bucket = self.storage_client.get_bucket('wikicontent')
+        page_rankings_bucket = self.storage_client.get_bucket('pagerankings')
+        page_voters_bucket = self.storage_client.get_bucket('pagevoters')
+
+        if not (wiki_content_blob := wiki_content_bucket.get_blob(name)):
             return 'The page does not exist.'
-        with blob.open('r') as f:
-            return blob.name, f.read()
+
+        page_rankings_blob = page_rankings_bucket.get_blob(name)
+        page_voters_blob = page_voters_bucket.get_blob(name)
+        with wiki_content_blob.open('r') as f:
+            content = f.read()
+        with page_rankings_blob.open('r') as f:
+            voting_ratio = int(f.read())
+        with page_voters_blob.open('r') as f:
+            page_voters = json.loads(f.read())
+
+        current_user_vote = page_voters[user] if user in page_voters else 0
+        return wiki_content_blob.name, content, voting_ratio, current_user_vote
 
     # Returns a list of all the page names
     def get_all_page_names(self):
-        '''Fetches all blobs from wikicontent bucket in google clous storage
+        '''Fetches all blobs from wikicontent bucket in google cloud storage
         that contain an html page.
 
         Returns:
@@ -44,7 +60,7 @@ class Backend:
 
     # Returns a list of all the image names
     def get_all_image_names(self):
-        '''Fetches all blobs from wikicontent bucket in google clous storage
+        '''Fetches all blobs from wikicontent bucket in google cloud storage
         that contain an jpg image.
 
         Returns:
@@ -57,14 +73,25 @@ class Backend:
         ]
 
     def upload(self, file_name):
-        bucket = self.storage_client.get_bucket('wikicontent')
-        if file_name:
-            blob = bucket.blob(file_name)
-            blob.name = file_name.split('/')[-1]
-            blob.upload_from_filename(file_name)
-            return 'File uploaded to blob'
-        else:
+        wiki_content_bucket = self.storage_client.get_bucket('wikicontent')
+        page_voters_bucket = self.storage_client.get_bucket('pagevoters')
+        page_rankings_bucket = self.storage_client.get_bucket('pagerankings')
+        if not file_name:
             return 'Ineligible filename'
+        page_name = file_name.split('/')[-1]
+        # uploads page
+        wiki_content_blob = wiki_content_bucket.blob(page_name)
+        wiki_content_blob.name = page_name
+        wiki_content_blob.upload_from_filename(file_name)
+        # allows page voting records to be stored for this page
+        page_voters_blob = page_voters_bucket.blob(page_name)
+        page_voters_blob.name = page_name
+        page_voters_blob.upload_from_string('{}')
+        # allows page rank to be tracked for this page
+        page_rankings_blob = page_rankings_bucket.blob(page_name)
+        page_rankings_blob.name = page_name
+        page_rankings_blob.upload_from_string('0')
+        return 'File uploaded to blob'
 
     '''Uploads file to bucket 'wikicontent' as a blob if file_name exists.
         
@@ -145,3 +172,47 @@ class Backend:
             return None
         else:
             return image
+
+    def get_page_rankings(self):
+        '''Fetches all blobs from the pagerankings bucket in google cloud storage
+        and stores them sorted by ranking.
+
+            Returns:
+                A list containing the names of the pages.
+        '''
+        bucket = self.storage_client.get_bucket('pagerankings')
+        blobs = bucket.list_blobs()
+        self.page_rankings = []
+        # pulls ranking information from gcs and stores it as a list of tuples (pagename, voting_ratio)
+        for blob in blobs:
+            with blob.open('r') as f:
+                self.page_rankings.append((blob.name, int(f.read())))
+        # sorts page_rankings by voting ratio
+        self.page_rankings.sort(key=lambda x: x[1], reverse=True)
+        # returns only the names of the pages
+        return [self.page_rankings[i][0] for i in range(self.num_pages_to_show)]
+
+    def update_vote(self, page, user, new_vote):
+        '''Updates the voting records and ranking for a page after a user votes.
+        If a user's vote is the same as their current vote the method will exit.
+        '''
+        pagevoters_bucket = self.storage_client.get_bucket('pagevoters')
+        pagerankings_bucket = self.storage_client.get_bucket('pagerankings')
+
+        pagevoters_blob = pagevoters_bucket.get_blob(page)
+        with pagevoters_blob.open('r') as f:
+            page_voters = json.loads(f.read())
+        current_vote = page_voters[user] if user in page_voters else 0
+        duplicate_vote = current_vote == new_vote
+        # update pagerankings
+        pagerankings_blob = pagerankings_bucket.get_blob(page)
+        with pagerankings_blob.open('r') as f:
+            pagerankings_blob.upload_from_string(
+                str(
+                    int(f.read()) - current_vote +
+                    (0 if duplicate_vote else new_vote)))
+        # update pagevoters
+        if duplicate_vote:
+            new_vote = 0
+        page_voters[user] = new_vote
+        pagevoters_blob.upload_from_string(json.dumps(page_voters))

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from unittest.mock import Mock
 import hashlib
 import base64
+import json
 
 
 @pytest.fixture
@@ -20,23 +21,139 @@ def mock_blob():
     return _foo
 
 
-def test_get_wiki_page_success(mock_blob):
-    with mock.patch.object(Backend, '__init__', lambda x, y: None):
-        backend = Backend(None)
-        backend.storage_client = mock.MagicMock()
-        backend.storage_client.bucket.return_value.get_blob.return_value = mock_blob(
-            'Blob', 'Blob content')  # Blob/page exists
-        page = backend.get_wiki_page('Test Page')
-        assert page == ('Blob', 'Blob content')
+# def test_get_wiki_page_success(mock_blob):
+#     with mock.patch.object(Backend, '__init__', lambda x, y: None):
+#         backend = Backend(None)
+#         backend.storage_client = mock.MagicMock()
+#         backend.storage_client.bucket.return_value.get_blob.return_value = mock_blob(
+#             'Blob', 'Blob content')  # Blob/page exists
+#         page = backend.get_wiki_page('Test Page')
+#         assert page == ('Blob', 'Blob content')
+
+# def test_get_wiki_page_failure(mock_blob):
+#     with mock.patch.object(Backend, '__init__', lambda x, y: None):
+#         backend = Backend(None)
+#         backend.storage_client = mock.MagicMock()
+#         backend.storage_client.bucket.return_value.get_blob.return_value = None  # Blob/page doesn't exist
+#         page = backend.get_wiki_page('Test Page')
+#         assert page == 'The page does not exist.'
 
 
-def test_get_wiki_page_failure(mock_blob):
-    with mock.patch.object(Backend, '__init__', lambda x, y: None):
-        backend = Backend(None)
-        backend.storage_client = mock.MagicMock()
-        backend.storage_client.bucket.return_value.get_blob.return_value = None  # Blob/page doesn't exist
-        page = backend.get_wiki_page('Test Page')
-        assert page == 'The page does not exist.'
+@mock.patch("google.cloud.storage.Client")
+def test_get_wiki_page_valid_page(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+    # wikicontent
+    wikicontent_blob = MagicMock()
+    wikicontent_bucket = MagicMock()
+    wikicontent_blob.open.return_value.__enter__.return_value.read.return_value = 'page content'
+    wikicontent_blob.name = 'page'
+    wikicontent_bucket.get_blob.return_value = wikicontent_blob
+
+    # allows get_bucket to return a certain bucket depending on the input
+    def get_bucket_side_effect(bucket_name):
+        return {
+            'wikicontent': wikicontent_bucket,
+            'pagerankings': pagerankings_bucket,
+            'pagevoters': pagevoters_bucket
+        }[bucket_name]
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+
+    get_wiki_page_return = backend.get_wiki_page('page', 'user')
+
+    wikicontent_bucket.get_blob.assert_called_once_with('page')
+    pagerankings_bucket.get_blob.assert_called_once_with('page')
+    pagevoters_bucket.get_blob.assert_called_once_with('page')
+    assert get_wiki_page_return == ('page', 'page content', 5, 1)
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_get_wiki_page_invalid_page(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+    # wikicontent
+    wikicontent_blob = MagicMock()
+    wikicontent_bucket = MagicMock()
+    wikicontent_blob.open.return_value.__enter__.return_value.read.return_value = None
+    wikicontent_blob.name = None
+    wikicontent_bucket.get_blob.return_value = None
+
+    # allows get_bucket to return a certain bucket depending on the input
+    def get_bucket_side_effect(bucket_name):
+        return {
+            'wikicontent': wikicontent_bucket,
+            'pagerankings': pagerankings_bucket,
+            'pagevoters': pagevoters_bucket
+        }[bucket_name]
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+
+    get_wiki_page_return = backend.get_wiki_page('page', 'user')
+
+    wikicontent_bucket.get_blob.assert_called_once_with('page')
+    pagerankings_bucket.get_blob.assert_not_called()
+    pagevoters_bucket.get_blob.assert_not_called()
+    assert get_wiki_page_return == 'The page does not exist.'
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_get_wiki_page_user_not_logged_in(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+    # wikicontent
+    wikicontent_blob = MagicMock()
+    wikicontent_bucket = MagicMock()
+    wikicontent_blob.open.return_value.__enter__.return_value.read.return_value = 'page content'
+    wikicontent_blob.name = 'page'
+    wikicontent_bucket.get_blob.return_value = wikicontent_blob
+
+    # allows get_bucket to return a certain bucket depending on the input
+    def get_bucket_side_effect(bucket_name):
+        return {
+            'wikicontent': wikicontent_bucket,
+            'pagerankings': pagerankings_bucket,
+            'pagevoters': pagevoters_bucket
+        }[bucket_name]
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+
+    get_wiki_page_return = backend.get_wiki_page('page', None)
+
+    wikicontent_bucket.get_blob.assert_called_once_with('page')
+    pagerankings_bucket.get_blob.assert_called_once_with('page')
+    pagevoters_bucket.get_blob.assert_called_once_with('page')
+    assert get_wiki_page_return == ('page', 'page content', 5, 0)
 
 
 def test_get_all_page_names_without_jpg(mock_blob):
@@ -252,3 +369,104 @@ def test_get_image_success():
     result = b.get_image('imageworks.jpg'.encode('utf-8'))
     assert result == base64.b64encode('imageworks.jpg'.encode('utf-8'))
 '''
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_duplicate_vote(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user', 1)
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({'user': 0}))
+    pagerankings_blob.upload_from_string.assert_called_once_with('4')
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_change_vote(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user', -1)
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({'user': -1}))
+    pagerankings_blob.upload_from_string.assert_called_once_with('3')
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_update_vote_new_user(client):
+    # pagevoters
+    pagevoters_blob = MagicMock()
+    pagevoters_bucket = MagicMock()
+    pagevoters_blob.open.return_value.__enter__.return_value.read.return_value = json.dumps(
+        {'user1': 1})
+    pagevoters_bucket.get_blob.return_value = pagevoters_blob
+    # pagerankings
+    pagerankings_blob = MagicMock()
+    pagerankings_bucket = MagicMock()
+    pagerankings_blob.open.return_value.__enter__.return_value.read.return_value = '5'
+    pagerankings_bucket.get_blob.return_value = pagerankings_blob
+
+    # allows get_bucket to return a certain bucket depending on the input
+    def get_bucket_side_effect(bucket_name):
+        return pagevoters_bucket if bucket_name == 'pagevoters' else pagerankings_bucket
+
+    client.get_bucket.side_effect = get_bucket_side_effect
+    backend = Backend(client)
+    #
+    backend.update_vote('page', 'user2', 1)
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({
+            'user1': 1,
+            'user2': 1
+        }))
+    pagerankings_blob.upload_from_string.assert_called_once_with('6')
+
+
+@mock.patch("google.cloud.storage.Client")
+def test_get_page_rankings(client):
+    blob1 = MagicMock()
+    blob1.name = 'page1'
+    blob1.open.return_value.__enter__.return_value.read.return_value = '5'
+    blob2 = MagicMock()
+    blob2.name = 'page2'
+    blob2.open.return_value.__enter__.return_value.read.return_value = '10'
+    bucket = MagicMock()
+    bucket.list_blobs.return_value = [blob1, blob2]
+    client = MagicMock()
+    client.get_bucket.return_value = bucket
+    backend = Backend(client)
+    backend.num_pages_to_show = 1
+    page_rankings = backend.get_page_rankings()
+    assert backend.page_rankings == [('page2', 10), ('page1', 5)]
+    assert page_rankings == ['page2']

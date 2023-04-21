@@ -41,7 +41,7 @@ def make_endpoints(app, backend=Backend()):
     def home():
         return render_template('main.html')
 
-    @app.route("/pages/<page>")
+    @app.route("/pages/<page>", methods=['GET'])
     def get_user_page(page):
         '''Fetches page from backend.
 
@@ -52,10 +52,35 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
-        file_name, file_content = b.get_wiki_page(page)
+        page_name, page_content, page_voting_ratio, current_user_vote = b.get_wiki_page(
+            page,
+            current_user.username if current_user.is_authenticated else None)
+        downvote_color = 'orange' if current_user_vote == -1 else 'grey'
+        upvote_color = 'orange' if current_user_vote == 1 else 'grey'
         return render_template('user.html',
-                               page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content))
+                               page_name=f'{page_name.split(".")[0]}',
+                               content=Markup(page_content),
+                               voting_ratio=page_voting_ratio,
+                               downvote_color=downvote_color,
+                               upvote_color=upvote_color)
+
+    @app.route("/pages/<page>", methods=['POST'])
+    @login_required
+    def post_user_page(page):
+        '''Fetches page from backend.
+
+        Args:
+            page:
+                The name of the page where the vote occurred.
+
+        Returns:
+            Redirects to get_user_page.
+        '''
+        if 'upvote' in request.form:
+            b.update_vote(page, current_user.username, 1)
+        elif 'downvote' in request.form:
+            b.update_vote(page, current_user.username, -1)
+        return redirect(request.url)
 
     '''
     route for the about page. I chose to have a list containing all our images as well as our names and zipping the values into one 
@@ -115,8 +140,7 @@ def make_endpoints(app, backend=Backend()):
             Returns:
                 A render of the pages.html file w/ the pages list passed in.
         '''
-
-        pages = b.get_all_page_names()
+        pages = b.get_page_rankings()
         return render_template("pages.html", pages=pages)
 
     @app.route("/signup", methods=['GET', 'POST'])

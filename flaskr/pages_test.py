@@ -30,14 +30,14 @@ def test_home_page(client):
 
 
 # TODO(Project 1): Write tests for other routes.
-@mock.patch("flaskr.backend.Backend.get_all_page_names",
+@mock.patch("flaskr.backend.Backend.get_page_rankings",
             return_value=["test1.html", "test2.html", "test3.html"])
-def integration_get_all_pages(mock_get_all_page_names, client):
+def integration_get_all_pages(mock_get_page_rankings, client):
     resp = client.get("/pages/")
     html = resp.data.decode()
     assert resp.status_code == 200
     assert "Pages contained in this Wiki" in html
-    mock_get_all_page_names.assert_called_once_with()
+    mock_get_page_rankings.assert_called_once_with()
 
 
 '''Mocks get_all_pages() from flaskr.pages.
@@ -112,6 +112,23 @@ def integration_get_user_page_route(client):
     resp = client.get(f'/pages/{page}')
     assert resp.status_code == 200
     assert b'FIFA' in resp.data
+
+
+def integration_post_user_page_route_logged_out(client):
+    page = 'sports_games.html'
+    resp = client.post(f'/pages/{page}', data={'upvote': 'Upvote'})
+    assert resp.status_code == 401
+
+
+def integration_post_user_page_route_logged_in(client):
+    page = 'sports_games.html'
+    client.post('/login',
+                data={
+                    'username': 'sebastian',
+                    'password': 'password'
+                })
+    resp = client.post(f'/pages/{page}', data={'upvote': 'Upvote'})
+    assert resp.status_code == 302
 
 
 def integration_upload_route_GET_logged_out(client):
@@ -209,6 +226,11 @@ def integration_login_failed_bc_of_pw(client):
 
 #not sure how to test this, think i need to mock a User to be logged in but am running out of time, need to comment code
 def integration_logout(client):
+    client.post('/login',
+                data={
+                    'username': 'sebastian',
+                    'password': 'password'
+                })
     resp = client.get('/logout')
     html = resp.data.decode()
     assert resp.status_code == 200
