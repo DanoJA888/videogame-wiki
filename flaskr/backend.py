@@ -14,7 +14,7 @@ class Backend:
         self.num_pages_to_show = 5
 
     # Returns the requested page
-    def get_wiki_page(self, name):
+    def get_wiki_page(self, name, user):
         '''Fetches blob from wikicontent bucket in google clous storage
 
         Args:
@@ -22,13 +22,26 @@ class Backend:
                 The name of the blob to be fetched.
 
         Returns:
-            The name of the blob and its contents as a string.
+            The name of the blob, its contents as a string, and its voting ratio.
         '''
-        bucket = self.storage_client.bucket('wikicontent')
-        if not (blob := bucket.get_blob(name)):
+        wiki_content_bucket = self.storage_client.get_bucket('wikicontent')
+        page_rankings_bucket = self.storage_client.get_bucket('pagerankings')
+        page_voters_bucket = self.storage_client.get_bucket('pagevoters')
+
+        if not (wiki_content_blob := wiki_content_bucket.get_blob(name)):
             return 'The page does not exist.'
-        with blob.open('r') as f:
-            return blob.name, f.read()
+
+        page_rankings_blob = page_rankings_bucket.get_blob(name)
+        page_voters_blob = page_voters_bucket.get_blob(name)
+        with wiki_content_blob.open('r') as f:
+            content = f.read()
+        with page_rankings_blob.open('r') as f:
+            voting_ratio = int(f.read())
+        with page_voters_blob.open('r') as f:
+            page_voters = json.loads(f.read())
+
+        current_user_vote = page_voters[user] if user in page_voters else 0
+        return wiki_content_blob.name, content, voting_ratio, current_user_vote
 
     # Returns a list of all the page names
     def get_all_page_names(self):

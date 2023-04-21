@@ -52,10 +52,17 @@ def make_endpoints(app, backend=Backend()):
         Returns:
             The specified page contents as a string.
         '''
-        file_name, file_content = b.get_wiki_page(page)
+        page_name, page_content, page_voting_ratio, current_user_vote = b.get_wiki_page(
+            page,
+            current_user.username if current_user.is_authenticated else None)
+        downvote_color = 'orange' if current_user_vote == -1 else 'grey'
+        upvote_color = 'orange' if current_user_vote == 1 else 'grey'
         return render_template('user.html',
-                               page_name=f'{file_name.split(".")[0]}',
-                               content=Markup(file_content))
+                               page_name=f'{page_name.split(".")[0]}',
+                               content=Markup(page_content),
+                               voting_ratio=page_voting_ratio,
+                               downvote_color=downvote_color,
+                               upvote_color=upvote_color)
 
     @app.route("/pages/<page>", methods=['POST'])
     @login_required
