@@ -86,7 +86,7 @@ class Backend:
         # allows page voting records to be stored for this page
         page_voters_blob = page_voters_bucket.blob(page_name)
         page_voters_blob.name = page_name
-        page_voters_blob.upload_from_string(json.dumps({}))
+        page_voters_blob.upload_from_string('{}')
         # allows page rank to be tracked for this page
         page_rankings_blob = page_rankings_bucket.blob(page_name)
         page_rankings_blob.name = page_name
@@ -192,22 +192,24 @@ class Backend:
         # returns only the names of the pages
         return [self.page_rankings[i][0] for i in range(self.num_pages_to_show)]
 
-    def update_vote(self, page, user, vote):
+    def update_vote(self, page, user, new_vote):
         '''Updates the voting records and ranking for a page after a user votes.
         If a user's vote is the same as their current vote the method will exit.
         '''
-        # update pagevoters
-        bucket = self.storage_client.get_bucket('pagevoters')
-        blob = bucket.get_blob(page)
-        with blob.open('r') as f:
+        pagevoters_bucket = self.storage_client.get_bucket('pagevoters')
+        pagerankings_bucket = self.storage_client.get_bucket('pagerankings')
+
+        pagevoters_blob = pagevoters_bucket.get_blob(page)
+        with pagevoters_blob.open('r') as f:
             page_voters = json.loads(f.read())
-        duplicate_vote = user in page_voters and page_voters[user] == vote
-        if duplicate_vote:
-            return
-        page_voters[user] = vote
-        blob.upload_from_string(json.dumps(page_voters))
+        current_vote = page_voters[user] if user in page_voters else 0
+        duplicate_vote = current_vote == new_vote
         # update pagerankings
-        bucket = self.storage_client.get_bucket('pagerankings')
-        blob = bucket.get_blob(page)
-        with blob.open('r') as f:
-            blob.upload_from_string(str(int(f.read()) + vote))
+        pagerankings_blob = pagerankings_bucket.get_blob(page)
+        with pagerankings_blob.open('r') as f:
+            pagerankings_blob.upload_from_string(str(int(f.read()) - current_vote + (0 if duplicate_vote else new_vote)))
+        # update pagevoters
+        if duplicate_vote:
+            new_vote = 0
+        page_voters[user] = new_vote
+        pagevoters_blob.upload_from_string(json.dumps(page_voters))

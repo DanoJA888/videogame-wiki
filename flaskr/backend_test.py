@@ -392,8 +392,9 @@ def test_update_vote_duplicate_vote(client):
     backend = Backend(client)
     #
     backend.update_vote('page', 'user', 1)
-    pagevoters_blob.blob.upload_from_string.assert_not_called()
-    pagerankings_blob.upload_from_string.assert_not_called()
+    pagevoters_blob.upload_from_string.assert_called_once_with(
+        json.dumps({'user': 0}))
+    pagerankings_blob.upload_from_string.assert_called_once_with('4')
 
 
 @mock.patch("google.cloud.storage.Client")
@@ -419,7 +420,7 @@ def test_update_vote_change_vote(client):
     backend.update_vote('page', 'user', -1)
     pagevoters_blob.upload_from_string.assert_called_once_with(
         json.dumps({'user': -1}))
-    pagerankings_blob.upload_from_string.assert_called_once_with('4')
+    pagerankings_blob.upload_from_string.assert_called_once_with('3')
 
 
 @mock.patch("google.cloud.storage.Client")
