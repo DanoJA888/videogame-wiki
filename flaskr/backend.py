@@ -12,6 +12,8 @@ class Backend:
         self.storage_client = storage_client
         self.page_rankings = []
         self.num_pages_to_show = 5
+        self.total_pages = 0
+        self.pages_counted = False
 
     # Returns the requested page
     def get_wiki_page(self, name, user):
@@ -239,8 +241,11 @@ class Backend:
         self.page_rankings = []
         # pulls ranking information from gcs and stores it as a list of tuples (pagename, voting_ratio)
         for blob in blobs:
+            if not self.pages_counted:
+                self.total_pages += 1
             with blob.open('r') as f:
                 self.page_rankings.append((blob.name, int(f.read())))
+        self.pages_counted = True
         # sorts page_rankings by voting ratio
         self.page_rankings.sort(key=lambda x: x[1], reverse=True)
         # returns only the names of the pages
@@ -270,3 +275,19 @@ class Backend:
             new_vote = 0
         page_voters[user] = new_vote
         pagevoters_blob.upload_from_string(json.dumps(page_voters))
+
+    '''
+    function that loads more pages, edge case for when there are no more pages to load, for when you click to load more but
+    there are less pages left to load than the amount added every time, and for when there is more pages after loading left
+    '''
+
+    def load_more_pages(self):
+        if self.num_pages_to_show == self.total_pages:
+            return 'No more pages to load'
+        elif self.num_pages_to_show + 5 > self.total_pages:
+            self.num_pages_to_show += (self.total_pages -
+                                       self.num_pages_to_show)
+            return 'loading final pages'
+        else:
+            self.num_pages_to_show += 5
+            return 'loading more pages'

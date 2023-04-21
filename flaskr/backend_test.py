@@ -561,3 +561,39 @@ def test_get_page_rankings(client):
     page_rankings = backend.get_page_rankings()
     assert backend.page_rankings == [('page2', 10), ('page1', 5)]
     assert page_rankings == ['page2']
+
+
+# unit tests when there are more pages to load after loading new batch of pages
+def test_load_pages_when_there_are_more_pages():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 5
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'loading more pages'
+
+
+# unit tests when there are less pages to load than the default amount (testing for out of bounds)
+def test_load_pages_when_there_are_less_pages_than_default():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 10
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'loading final pages'
+
+
+# unti test when there are no more pages to load (i loaded all the pages)
+def test_load_pages_when_no_more_to_load():
+    mock_client = MagicMock()
+    total_pages = 11
+    num_pages_loaded = 11
+    b = Backend(mock_client)
+    b.total_pages = total_pages
+    b.num_pages_to_show = num_pages_loaded
+    result = b.load_more_pages()
+    assert result == 'No more pages to load'
