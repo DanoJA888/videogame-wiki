@@ -141,6 +141,11 @@ def integration_get_user_page_route(client):
     assert b'FIFA' in resp.data
 
 def integration_create_page_route_logged_in(client):
+    client.post('/login',
+                data={
+                    'username': 'test_chris_feature',
+                    'password': 'password'
+                })
     resp = client.get('/create_page')
     assert resp.status_code == 200
     assert b'Create Page' in resp.data
@@ -150,6 +155,11 @@ def integration_create_page_route_logged_out(client):
     assert resp.status_code == 401
 
 def integration_edit_page_route_logged_in(client):
+    client.post('/login',
+                data={
+                    'username': 'test_chris_feature',
+                    'password': 'password'
+                })
     resp = client.get('/edit_page')
     assert resp.status_code == 200
     assert b'Edit Page' in resp.data
@@ -159,6 +169,11 @@ def integration_edit_page_route_logged_out(client):
     assert resp.status_code == 401
 
 def integration_your_pages_route_logged_in(client):
+    client.post('/login',
+                data={
+                    'username': 'test_chris_feature',
+                    'password': 'password'
+                })
     resp = client.get('/your_pages')
     assert resp.status_code == 200
     assert b"'s Pages" in resp.data

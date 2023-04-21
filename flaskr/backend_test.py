@@ -157,14 +157,35 @@ def test_sign_up_fail_pw(mock_client):
 '''
 
 @mock.patch("google.cloud.storage.Client")
-def test_add_user_pages(mock_client):
-    user = 'user'
+def test_add_user_pages_user_file_created(mock_client):
+    user = 'test_user'
     filename = 'filename.html'
     mock_client = mock.MagicMock()
     mock_backend = Backend(mock_client)
     mock_bucket = mock_client.get_bucket
     mock_blob = mock_bucket.get_blob("test_user.txt").return_value
     assert mock_backend.add_user_page(user, filename) == 'Page added!'
+
+@mock.patch("google.cloud.storage.Client")
+def test_add_user_pages_user_file_not_created(mock_client):
+    user = 'user'
+    filename = 'filename.html'
+    mock_client = mock.MagicMock()
+    mock_backend = Backend(mock_client)
+    mock_bucket = mock_client.get_bucket
+    mock_blob = mock_bucket.get_blob("test_user.txt").return_value
+    assert mock_backend.add_user_page(user, filename) == 'User pages successfully created!'
+
+@mock.patch("google.cloud.storage.Client")
+def test_get_all_user_pages(mock_client):
+    user = 'test_user'
+    mock_client = mock.MagicMock()
+    mock_backend = Backend(mock_client)
+    mock_bucket = mock_client.get_bucket
+    mock_blob = mock_bucket.get_blob("test_user.txt").return_value
+    with mock_blob.open(mode='w') as mock_file:
+        mock_file.write('test_file.txt')
+    assert mock_backend.get_all_user_pages(user) == ['test_file.txt']
 
 # TODO(Project 1): Write tests for Backend methods.
 

@@ -184,7 +184,10 @@ class Backend:
             blob = bucket.blob(user + '.txt')
             with blob.open(mode='w') as f:
                 f.write(filename + '\n')
-            return 'User pages successfully created!'             
+            return 'User pages successfully created!'
+        
+
+
 
                 
 
