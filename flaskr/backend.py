@@ -156,7 +156,7 @@ class Backend:
                 if blob.name == user + ".txt":
                     with blob.open(mode='r') as file:
                         for line in file:
-                            pages.append(line)
+                            pages.append(line)          
         return pages
         
         
@@ -185,6 +185,7 @@ class Backend:
             with blob.open(mode='w') as f:
                 f.write(filename + '\n')
             return 'User pages successfully created!'
+    
         
 
 

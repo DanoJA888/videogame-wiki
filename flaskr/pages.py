@@ -211,6 +211,8 @@ def make_endpoints(app, backend=Backend()):
         if request.method == 'POST':
             page = request.form['pagecontent']
             filename = request.form.get('pages_select')
+            if '\r\n' in filename:
+                filename = filename.replace('\r\n', '')
             with open(filename, 'w') as f:
                 f.write(page)
             b.upload(filename)
